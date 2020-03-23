@@ -1,0 +1,60 @@
+
+{% extends "base.html" %}
+
+{% block page-title %}group - {{ group }} {% endblock %}
+
+{% block content %}
+    <div class="item">
+        <h1>group - {{ group }} </h1><br />
+        <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
+            <tr style="background-color: #DDD">
+                <th style="padding: 10px;">ID</th>
+                <th>NameT</th>
+                <th>Action</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px;">{{ groups.id }}</td>
+                <td>{{ group }}</td>
+                <td><input type="button" href="{% url 'group-delete' group.id %}" id="delete-item" value="delete" />
+                <input type="button" href="{% url 'group-edit' group.id %}" id="edit-item" value="edit" /></td>
+            </tr>
+        </table>
+        <br />
+        <br />
+        <br />
+        <input type="button" onclick="$('#add-form-div').toggle();" value="Edit group"><br /><br />
+        <div id="add-form-div" style="display: none;">
+            <form action="{% url 'group-details' group.id %}" method="POST" id="add-form">
+                    <div id="form-fields">
+                        {% csrf_token %}
+                        {{ form }}
+                    </div>
+                    <input type="submit" value="Submit" />
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (new FormHelper('add-form')).bind_for_ajax(
+            function(data) {
+                $('#form-fields').html('');
+                $('#form-fields').append('<input type="hidden" value="' + data.token + '" name="csrfmiddlewaretoken">');
+                $('#form-fields').append(data.form).hide().fadeIn();
+                $('#add-form input[type=submit]').removeAttr('disabled');
+            },
+            function(data) {
+                $('#form-fields').html('');
+                $('#form-fields').append('<input type="hidden" value="' + data.token + '" name="csrfmiddlewaretoken">');
+                $('#form-fields').append(data.form).hide().fadeIn();
+                $('#add-form input[type=submit]').removeAttr('disabled');
+            }
+        );
+        $('#delete-item').click(function() {
+            $.get($(this).attr('href'), function(data) {
+                $('div.item').before('<h1>Item removed</h1><br /><br />');
+                $('div.item').remove();
+            });
+        });
+    </script>
+    <a href="{% url 'group-list' %}">back to the list</a>
+{% endblock %}

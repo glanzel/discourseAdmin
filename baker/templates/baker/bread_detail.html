@@ -1,0 +1,14 @@
+{% extends "baker/bread_base.html" %}
+
+{% block title %}
+    {{ bread }}
+{% endblock %}
+
+{% block content %}
+    <h1><a href={% url "baker:bread_list" %}>Bread</a></h1>
+    <h2>{{ bread }} | <a href={% url "baker:bread_update" bread.pk %}>Update</a> | 
+    <form style="display:inline;" action={% url "baker:bread_delete" bread.pk %} method="post" onsubmit="return confirm('Are you sure you want to delete {{ bread }}?')">{% csrf_token %}
+    <input type="submit" value="Delete" />
+    </form>
+    </h2>
+{% endblock %}

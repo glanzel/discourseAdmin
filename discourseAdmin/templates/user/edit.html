@@ -1,0 +1,24 @@
+
+{% extends "discourse_base.html" %}
+
+{% block page-title %}user - {{ user }} {% endblock %}
+
+{% block content %}
+    <div class="item">
+        <h1>user - {{ user }} </h1><br />
+        <br />
+        <br />
+        <input type="button" onclick="$('#add-form-div').toggle();" value="Edit user"><br /><br />
+        <div id="add-form-div" >
+            <form action="{% url 'user-details' user.id %}" method="POST" id="add-form">
+                    <div id="form-fields">
+                        {% csrf_token %}
+                        {{ form.as_table }}
+                    </div>
+                    <input type="submit" value="Submit" />
+            </form>
+        </div>
+    </div>
+
+    <a href="{% url 'user-list' %}">back to list</a>
+{% endblock %}
