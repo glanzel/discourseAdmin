@@ -13,8 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from discourse_django_sso import views
+
 from crudbuilder import urls
 from testapp.views import PostCrudManager # or from views import BookCrudManager depending on where you've put it
 post_crud = PostCrudManager()
@@ -30,3 +33,31 @@ urlpatterns = [
 ]
 
 urlpatterns += post_crud.get_url_patterns()
+
+urlpatterns = [
+    path(
+        'sso/',
+        views.SSOProviderView.as_view(
+            sso_redirect=settings.DISCOURSE_SSO_REDIRECT,
+            sso_secret=settings.DISCOURSE_SSO_KEY
+        ),
+        name="sso"
+    ),
+] + urlpatterns
+
+
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+
+        # For django versions before 2.0:
+        # url(r'^__debug__/', include(debug_toolbar.urls)),
+
+    ] + urlpatterns
+    
+print(urlpatterns);    
+    
+    
+    

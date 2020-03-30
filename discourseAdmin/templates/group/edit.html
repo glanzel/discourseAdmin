@@ -1,0 +1,9 @@
+<div id="add-form-div" >
+    <form action="{% url 'group-details' group.id %}" method="POST" id="add-form">
+            <div id="form-fields">
+                {% csrf_token %}
+                {{ form }}
+            </div>
+            <input type="submit" value="Submit" />
+    </form>
+</div>

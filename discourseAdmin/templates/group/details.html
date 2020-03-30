@@ -1,5 +1,5 @@
 
-{% extends "base.html" %}
+{% extends "discourse_base.html" %}
 
 {% block page-title %}group - {{ group }} {% endblock %}
 
@@ -16,7 +16,7 @@
                 <td style="padding: 10px;">{{ groups.id }}</td>
                 <td>{{ group }}</td>
                 <td><input type="button" href="{% url 'group-delete' group.id %}" id="delete-item" value="delete" />
-                <input type="button" href="{% url 'group-edit' group.id %}" id="edit-item" value="edit" /></td>
+                </td>
             </tr>
         </table>
         <br />
@@ -27,7 +27,7 @@
             <form action="{% url 'group-details' group.id %}" method="POST" id="add-form">
                     <div id="form-fields">
                         {% csrf_token %}
-                        {{ form }}
+                        {{ form.as_ul }}
                     </div>
                     <input type="submit" value="Submit" />
             </form>

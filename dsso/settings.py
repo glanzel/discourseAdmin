@@ -48,17 +48,24 @@ INSTALLED_APPS = [
     'baker',
     'django3scaffold',
     'forum',
-    'discourseAdmin'
+    'discourseAdmin',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+INTERNAL_IPS = [
+    'localhost'
+    '127.0.0.1',
 ]
 
 ROOT_URLCONF = 'dsso.urls'
@@ -143,3 +150,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+DISCOURSE_SSO_KEY = 'test-abcd'
+
+DISCOURSE_SSO_REDIRECT = 'http://localhost/test'
+
+DISCOURSE_SSO_URL = 'http://www.olcms.org/sso'
+
+

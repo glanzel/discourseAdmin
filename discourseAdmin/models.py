@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -16,9 +17,8 @@ from django.db import models
 #     class Meta:
 #         ordering = ['-id']
 
-from django.contrib.auth.models import User
 
-class Group(models.Model):
+class dGroup(models.Model):
     
     name = models.CharField(max_length=255, null=True, blank=True)
 
@@ -35,11 +35,20 @@ class Group(models.Model):
     class Meta:
         ordering = ['-id']
 
+
+class Participant(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    department = models.ForeignKey(dGroup, on_delete=models.CASCADE, related_name="department")
+    #groups = models.ManyToManyField(Group, through='User_Groups', related_name="groups")
+
+
+from django.contrib.auth.models import User
+
 class User_Groups(models.Model):
     
-    user_id = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
-    group_id = models.ForeignKey(Group, null=True, blank=True, on_delete=models.CASCADE)
+    group = models.ForeignKey(dGroup, null=True, blank=True, on_delete=models.CASCADE)
 
     rights = models.IntegerField(null=True, default=None)
 
