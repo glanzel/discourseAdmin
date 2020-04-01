@@ -39,6 +39,7 @@ class dGroup(models.Model):
 class Participant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     department = models.ForeignKey(dGroup, on_delete=models.CASCADE, related_name="department")
+    discourse_user = models.CharField(max_length=255, null=True, blank=True)
     #groups = models.ManyToManyField(Group, through='User_Groups', related_name="groups")
 
 

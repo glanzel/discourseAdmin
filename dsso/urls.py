@@ -18,21 +18,18 @@ from django.contrib import admin
 from django.urls import include, path
 from discourse_django_sso import views
 
-from crudbuilder import urls
-from testapp.views import PostCrudManager # or from views import BookCrudManager depending on where you've put it
-post_crud = PostCrudManager()
+#from crudbuilder import urls
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('testapp/', include('testapp.urls')),
     path('baker/', include('baker.urls')),
     path(r'', include('forum.urls')),
     path(r'', include('discourseAdmin.urls')),
 
 ]
 
-urlpatterns += post_crud.get_url_patterns()
+#urlpatterns += post_crud.get_url_patterns()
 
 urlpatterns = [
     path(

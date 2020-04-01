@@ -5,8 +5,6 @@ from . import views
 
 urlpatterns = (
 
-    path('user_groups/', views.user_groups_list, name='user_groups-list'),
-    path('user_groups/<int:id>/', views.user_groups_details, name='user_groups-details'),
     path('user_groups/<int:id>/delete/', views.user_groups_delete, name='user_groups-delete'),
 
     path('group/', views.group_list, name='group-list'),
@@ -19,5 +17,7 @@ urlpatterns = (
     path('import_groups', views.import_dgroups, name='import_dgroups'),
     path('import_users', views.import_users, name='import_users'),
     path('create_user', views.create_user, name='create_user'),
+    path('user/<int:user_id>/add_to_group/<int:group_id>', views.add_user_to_group, name='add_user_to_group'),
+    path('user/<int:user_id>/delete_from_group/<int:group_id>', views.delete_user_from_group, name='delete_user_from_group'),
 
 )

@@ -29,6 +29,7 @@ DOMAIN_NAME= 'localhost'
 WWW_ROOT = BASE_DIR
 IS_DEV = True
 IS_PROD = False
+LOGIN_URL = '/admin/login'
 
 ALLOWED_HOSTS = []
 
@@ -42,13 +43,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'discourseAdmin',
+    'dsso',
     'testapp',
     'generic_scaffold',
     'django_baker',
     'baker',
     'django3scaffold',
     'forum',
-    'discourseAdmin',
     'debug_toolbar',
 ]
 

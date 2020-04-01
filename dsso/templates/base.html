@@ -4,7 +4,10 @@
 <head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
-{% block extrastyle %}{% endblock %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static "css/main.css" %}">
+
+{% endblock %}
 {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}">{% endif %}
 {% block extrahead %}{% endblock %}
 {% block responsive %}
@@ -17,7 +20,7 @@
 {% load i18n %}
 
 <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"
-  data-admin-utc-offset="{% now "Z" %}">ahah
+  data-admin-utc-offset="{% now "Z" %}">
 
 <!-- Container -->
 <div id="container">
@@ -58,7 +61,19 @@
     <!-- END Header -->
     {% block breadcrumbs %}
     <div class="breadcrumbs">
-    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    <a href="{% url 'user-list' %}">{% trans 'Users' %}</a>
+     
+    <a href="{% url 'create_user' %}">{% trans '+User' %}</a>
+    <span>|</span>
+    
+    <a href="{% url 'group-list' %}">{% trans 'Groups' %}</a>
+    <span>|</span>
+    <a href="{% url 'import_dgroups' %}">{% trans 'Import Groups' %}</a>
+    <a href="{% url 'import_users' %}">{% trans 'Import Users' %}</a>
+    <span>|</span>
+    <a href="{% url 'admin:index' %}">{% trans 'Django-Admin' %}</a>
+    
+
     {% if title %} &rsaquo; {{ title }}{% endif %}
     </div>
     {% endblock %}

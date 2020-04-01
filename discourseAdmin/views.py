@@ -1,8 +1,8 @@
 import pdb, json
 from django.shortcuts import render
-from django.forms.models import model_to_dict
+#from django.forms.models import model_to_dict
 from django.core import serializers
-
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,10 +10,12 @@ from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.middleware.csrf import get_token
 from django3scaffold.http import JsonResponse
-from discourseAdmin.models import User
+from discourseAdmin.models import Participant, User
 from discourseAdmin.forms import UserForm
 from doctest import DebugRunner
 
+
+@login_required
 def user_list(request, template='user/list.html'):
     d = {}
     d['form'] = UserForm()
@@ -29,6 +31,7 @@ def user_list(request, template='user/list.html'):
     return render(request, template, d)
 
 from discourseAdmin.forms import UserForm
+@login_required
 def user_edit(request, id, template='user/edit.html'):
     d = {}
     item = get_object_or_404(User, pk=id)
@@ -47,14 +50,14 @@ def user_edit(request, id, template='user/edit.html'):
     return render(request, template, d)
 
 from discourseAdmin.forms import HasDiscoGroups
+@login_required
 def user_details(request, id, template='user/details.html'):
     d = {}
     item = get_object_or_404(User, pk=id)
     #print(serializers.serialize('json', [ item, ]))
-    #print(item.dgroup_set.all())
-    
-    groups = dGroup.objects.all().filter(user_groups__rights=1)
-
+    d['user_groups'] = item.dgroup_set.all()
+    print(d['user_groups'])
+    d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1).exclude(id__in=d['user_groups'])
     #print(groups) 
     d['form'] = HasDiscoGroups()
     
@@ -81,6 +84,7 @@ def user_details(request, id, template='user/details.html'):
 
 
 
+@login_required
 def user_delete(request, id):
     item = User.objects.get(pk=id)
     item.delete()
@@ -88,6 +92,7 @@ def user_delete(request, id):
 
 from discourseAdmin.models import dGroup
 from discourseAdmin.forms import GroupForm
+@login_required
 def group_list(request, template='group/list.html'):
     d = {}
     d['form'] = GroupForm()
@@ -103,6 +108,7 @@ def group_list(request, template='group/list.html'):
     return render(request, template, d)
 
 from discourseAdmin.forms import GroupForm
+@login_required
 def group_details(request, id, template='group/details.html'):
     d = {}
     item = get_object_or_404(dGroup, pk=id)
@@ -121,43 +127,27 @@ def group_details(request, id, template='group/details.html'):
     d['group'] = dGroup.objects.get(pk=id)
     return render(request, template, d)
 
+@login_required
 def group_delete(request, id):
     item = dGroup.objects.get(pk=id)
     item.delete()
     return JsonResponse()
 
 from discourseAdmin.models import User_Groups
-from discourseAdmin.forms import User_GroupsForm
-def user_groups_list(request, template='user_groups/list.html'):
-    d = {}
-    d['form'] = User_GroupsForm()
-    if request.method == 'POST':
-        form = User_GroupsForm(request.POST)
-        if form.is_valid():
-            item = form.save()
-            return JsonResponse(data={'id': item.id, 'name': str(item), 'form': User_GroupForm().as_p(), 'token': get_token(request)})
-        else:
-            d['form'] = form
-            return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
-    d['user_groups_list'] = User_Groups.objects.all()
-    return render(request, template, d)
+@login_required
+def add_user_to_group(request, user_id, group_id):
+    #TODO: check authorisation
+    ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
+    return redirect('user-details', id=user_id)
 
-from discourseAdmin.forms import User_GroupsForm
-def user_groups_details(request, id, template='user_groups/details.html'):
-    d = {}
-    item = get_object_or_404(User_Groups, pk=id)
-    d['form'] = User_GroupForm(instance=item)
-    if request.method == 'POST':
-        form = User_GroupForm(request.POST, instance=item)
-        if form.is_valid():
-            item = form.save()
-            return JsonResponse(data={'form': User_GroupForm(instance=item).as_p(), 'token': get_token(request)})
-        else:
-            d['form'] = form
-            return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
-    d['user_groups'] = User_Groups.objects.get(pk=id)
-    return render(request, template, d)
+@login_required
+def delete_user_from_group(request, user_id, group_id):
+    #TODO: check authorisation
+    ug = User_Groups.objects. get(user_id=user_id, group_id = group_id)
+    ug.delete()
+    return redirect('user-details', id=user_id)
 
+@login_required    
 def user_groups_delete(request, id):
     item = User_Groups.objects.get(pk=id)
     item.delete()
@@ -195,15 +185,28 @@ def import_users(request):
         api_key='84531905176dfd5d7cde45008430f879da00e43a94510cd39d540bd13d1d01b1')
     usersDict = client.users()
     for userDict in usersDict:
+        userObj, created = User.objects.get_or_create(username=userDict['username'])
+        #print(userObj.__dict__)
+        #print(created)
+        if created: 
+            for key in userDict:
+                if key != "id":
+                    setattr(userObj, key, userDict[key])
+            userObj.save();
+        else :
+            #TODO overwrite Userdata in Discourse
+            print("TODO")
+        try:
+            p = userObj.participant
+        except:
+            p = Participant(user = userObj)
+        p.discourse_user=discourse_user=userDict['id']
+        p.save();
+            
         print(userDict)
         print("-");
-        
-        user = User();
-        for key in userDict:
-            setattr(user, key, userDict[key])
-        print(user.__dict__)
+        print(userObj.__dict__)
         print("-");
-        #user.save();
     return JsonResponse()
     #return JsonResponse(usersDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
     
@@ -219,11 +222,22 @@ def create_user(request, template='user/create.html'):
         form = UserForm(request.POST)
         if form.is_valid():
             item = form.save()
-            #print(item.__dict__)
             email = item.username + "@bekanntedomain.de"
-            dUser = client.create_user(item.first_name, item.username, email, item.password, active='true')
+            dUser = client.create_user(item.username, item.username, email, item.password, active='true')
             client.deactivate(dUser['user_id'])
             client.activate(dUser['user_id'])
+            p = Participant(user = item, discourse_user=dUser['user_id'])
+            p.save()
+            
+            #item.discourse_user_id = dUser['user_id']
+            #form.discourse_user_id = dUser['user_id']
+            #item.save()
+            #form.save()
+            print("******************* item dict *****************")
+            print(item.__dict__)
+            print("******************* form dict *****************")
+            print(form.__dict__)
+            print("-----")
             return JsonResponse(data={'id': item.id, 'name': str(item), 'form': UserForm().as_p(), 'token': get_token(request)})
         else:
             d['form'] = form

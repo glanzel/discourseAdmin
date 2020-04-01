@@ -21,8 +21,20 @@
             </tr>
         </table>
         <br />
+        
+        <b>Benutzer-Gruppen:</b>
         <br />
+        {% for group in user_groups %}
+            <a href="{% url 'delete_user_from_group' user.id group.id  %}">{{group}}</a>
+        {% endfor %}
+
+        <br /><br />
+        <b>Zu Gruppe hinzufügen:</b><br>
+        {% for group in admin_groups %}
+            <a href="{% url 'add_user_to_group' user.id group.id  %}">{{group}}</a>
+        {% endfor %}
         <br />
+<!--
         <div id="add-form-div" >
             <form action="{% url 'user-details' user.id %}" method="POST" id="add-form">
                     <div id="form-fields">
@@ -33,6 +45,8 @@
             </form>
         </div>
     </div>
+-->        
+<br><br>
 
     <script type="text/javascript">
         (new FormHelper('add-form')).bind_for_ajax(
