@@ -12,6 +12,7 @@ from django.middleware.csrf import get_token
 from django3scaffold.http import JsonResponse
 from discourseAdmin.models import Participant, User
 from discourseAdmin.forms import UserForm
+from discourseAdmin.logic import Utils
 from doctest import DebugRunner
 
 
@@ -163,17 +164,30 @@ def import_dgroups(request):
         api_key='84531905176dfd5d7cde45008430f879da00e43a94510cd39d540bd13d1d01b1')
     groupsDict = client.groups()
     for groupDict in groupsDict:
-        print(groupDict)
-        print("-");
-        
-        group = dGroup();
-        for key in groupDict:
-            setattr(group, key, groupDict[key])
-            #print(groupDict[key]) 
-        #groups.append(json.loads(groupJson))
-        print(group.__dict__)
-        print("-");
-        group.save();
+        groupObj, created = dGroup.objects.get_or_create(id=groupDict['id'])
+        if created: 
+            print(groupDict)
+            print("-");
+            
+            groupObj = dGroup();
+            for key in groupDict:
+                setattr(groupObj, key, groupDict[key])
+                #print(groupDict[key]) 
+            #groups.append(json.loads(groupJson))
+            print(groupObj.__dict__)
+            print("-");
+            groupObj.save();
+        else:
+            print("TODO?")
+            #TODO: Discourse group aktualisieren ?      
+        groupDetails = client.group(groupDict['name'])
+        print(groupDetails)
+        for member in groupDetails['members']:
+            p = Participant.objects.get(discourse_user=member['id'])
+            ug, create = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
+            if created:
+                ug.save()    
+    
     return JsonResponse()
     #return JsonResponse(groupsDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
 
@@ -209,6 +223,8 @@ def import_users(request):
         print("-");
     return JsonResponse()
     #return JsonResponse(usersDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
+
+
     
 from pydiscourse import DiscourseClient
 def create_user(request, template='user/create.html'):

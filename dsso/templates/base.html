@@ -72,8 +72,9 @@
     <a href="{% url 'import_users' %}">{% trans 'Import Users' %}</a>
     <span>|</span>
     <a href="{% url 'admin:index' %}">{% trans 'Django-Admin' %}</a>
-    
-
+    <span>|</span>
+    <a href="{% url 'admin:logout' %}">{% trans 'logout' %}</a>
+ 
     {% if title %} &rsaquo; {{ title }}{% endif %}
     </div>
     {% endblock %}

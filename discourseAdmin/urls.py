@@ -10,6 +10,7 @@ urlpatterns = (
     path('group/', views.group_list, name='group-list'),
     path('group/<int:id>/', views.group_details, name='group-details'),
     path('group/<int:id>/delete/', views.group_delete, name='group-delete'),
+    path('', views.user_list, name='user-list'),
     path('user/', views.user_list, name='user-list'),
     path('user/<int:id>/', views.user_details, name='user-details'),
     path('user/<int:id>/delete/', views.user_delete, name='user-delete'),
