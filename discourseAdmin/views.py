@@ -58,7 +58,7 @@ def user_details(request, id, template='user/details.html'):
     #print(serializers.serialize('json', [ item, ]))
     d['user_groups'] = item.dgroup_set.all()
     print(d['user_groups'])
-    d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1).exclude(id__in=d['user_groups'])
+    d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1, user_groups__user_id=request.user.id).exclude(id__in=d['user_groups'])
     #print(groups) 
     d['form'] = HasDiscoGroups()
     
@@ -227,6 +227,8 @@ def create_user(request, template='user/create.html'):
         form = UserForm(request.POST)
         if form.is_valid():
             item = form.save()
+            item.set_password(item.password)
+            item.save()
             email = item.username + "@bekanntedomain.de"
             dUser = client.create_user(item.username, item.username, email, item.password, active='true')
             client.deactivate(dUser['user_id'])
