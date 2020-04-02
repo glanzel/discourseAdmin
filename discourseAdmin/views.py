@@ -158,10 +158,7 @@ def user_groups_delete(request, id):
 from pydiscourse import DiscourseClient
 from django.core.serializers.json import DjangoJSONEncoder
 def import_dgroups(request):
-    client = DiscourseClient(
-        'http://localhost:3000',
-        api_username='system',
-        api_key='84531905176dfd5d7cde45008430f879da00e43a94510cd39d540bd13d1d01b1')
+    client = Utils.getDiscourseClient()
     groupsDict = client.groups()
     for groupDict in groupsDict:
         groupObj, created = dGroup.objects.get_or_create(id=groupDict['id'])
@@ -193,10 +190,7 @@ def import_dgroups(request):
 
 from pydiscourse import DiscourseClient
 def import_users(request):
-    client = DiscourseClient(
-        'http://localhost:3000',
-        api_username='system',
-        api_key='84531905176dfd5d7cde45008430f879da00e43a94510cd39d540bd13d1d01b1')
+    client = Utils.getDiscourseClient()
     usersDict = client.users()
     for userDict in usersDict:
         userObj, created = User.objects.get_or_create(username=userDict['username'])
@@ -223,15 +217,10 @@ def import_users(request):
         print("-");
     return JsonResponse()
     #return JsonResponse(usersDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
-
-
     
 from pydiscourse import DiscourseClient
 def create_user(request, template='user/create.html'):
-    client = DiscourseClient(
-        'http://localhost:3000',
-        api_username='system',
-        api_key='84531905176dfd5d7cde45008430f879da00e43a94510cd39d540bd13d1d01b1')
+    client = Utils.getDiscourseClient()
     d = {}
     d['form'] = UserForm()
     if request.method == 'POST':

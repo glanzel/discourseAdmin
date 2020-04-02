@@ -1,6 +1,8 @@
+from django.conf import settings
+from pydiscourse import DiscourseClient
 class Utils():
     def getDiscourseClient():
         return DiscourseClient(
-            'http://localhost:3000',
-            api_username='system',
-            api_key='84531905176dfd5d7cde45008430f879da00e43a94510cd39d540bd13d1d01b1')
+            settings.DISCOURSE_API_HOST,
+            api_username=settings.DISCOURSE_API_USERNAME,
+            api_key=settings.DISCOURSE_API_KEY)
