@@ -1,0 +1,31 @@
+import os
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'a_really_seceret_key'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+DOMAIN_NAME= 'localhost'
+IS_DEV = True
+IS_PROD = False
+
+ALLOWED_HOSTS = []
+
+DISCOURSE_SSO_KEY = 'test-abcd'
+DISCOURSE_SSO_REDIRECT = 'http://localhost/test'
+DISCOURSE_SSO_URL = 'http://www.olcms.org/sso'
+
+INTERNAL_IPS = [
+    'localhost'
+    '127.0.0.1',
+]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': '/var/www/dsso/dsso/django_my.cnf',
+        },
+    }
+}

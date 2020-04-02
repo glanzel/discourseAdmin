@@ -19,20 +19,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'hm@e9nf5d01&2bl8lhvg2w=xbup!j5wpo0=^8(xyf__35_eohy'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-DOMAIN_NAME= 'localhost'
-WWW_ROOT = BASE_DIR
-IS_DEV = True
-IS_PROD = False
 LOGIN_URL = '/admin/login'
-
-ALLOWED_HOSTS = []
-
+WWW_ROOT = BASE_DIR
 
 # Application definition
 
@@ -65,10 +55,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-INTERNAL_IPS = [
-    'localhost'
-    '127.0.0.1',
-]
 
 ROOT_URLCONF = 'dsso.urls'
 
@@ -103,16 +89,6 @@ WSGI_APPLICATION = 'dsso.wsgi.application'
 # }
 # 
 # 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': '/var/www/dsso/dsso/django_my.cnf',
-        },
-    }
-}
-
-
 
 
 # Password validation
@@ -153,10 +129,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-DISCOURSE_SSO_KEY = 'test-abcd'
-
-DISCOURSE_SSO_REDIRECT = 'http://localhost/test'
-
-DISCOURSE_SSO_URL = 'http://www.olcms.org/sso'
-
+from .settings_local import *
 

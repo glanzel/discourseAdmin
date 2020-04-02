@@ -33,5 +33,5 @@ class CakeAdmin(ExtendedModelAdminMixin, admin.ModelAdmin):
     readonly_fields = []
 
 
-admin.site.register(Bread, BreadAdmin)
-admin.site.register(Cake, CakeAdmin)
+#admin.site.register(Bread, BreadAdmin)
+#admin.site.register(Cake, CakeAdmin)
