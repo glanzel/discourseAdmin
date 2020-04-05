@@ -9,11 +9,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.middleware.csrf import get_token
-from django3scaffold.http import JsonResponse
+#from django3scaffold.http import JsonResponse
 from discourseAdmin.models import Participant, User
 from discourseAdmin.forms import UserForm
 from discourseAdmin.logic import Utils
 from doctest import DebugRunner
+from django.conf import settings
 
 
 @login_required
@@ -157,6 +158,7 @@ def user_groups_delete(request, id):
 
 from pydiscourse import DiscourseClient
 from django.core.serializers.json import DjangoJSONEncoder
+@login_required    
 def import_dgroups(request):
     client = Utils.getDiscourseClient()
     groupsDict = client.groups()
@@ -189,6 +191,7 @@ def import_dgroups(request):
     #return JsonResponse(groupsDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
 
 from pydiscourse import DiscourseClient
+@login_required    
 def import_users(request):
     client = Utils.getDiscourseClient()
     usersDict = client.users()
@@ -252,4 +255,17 @@ def create_user(request, template='user/create.html'):
     d['user_list'] = User.objects.all()
     return render(request, template, d)
     #return JsonResponse()
-    
+
+from django.contrib.auth import authenticate
+from pydiscourse import sso
+@login_required    
+def discourse_sso(request):
+    print("discourse_sso")
+    payload = request.GET.get('sso')
+    signature = request.GET.get('sig')
+    nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
+    print(request.user.__dict__)
+    url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, request.user.email, request.user.id, request.user.username)
+    return redirect('http://localhost:3000' + url)
+    #return redirect('http://discuss.example.com' + url)
+
