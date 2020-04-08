@@ -11,6 +11,12 @@ class UserForm(forms.ModelForm):
     #dgroup_set = forms.ModelMultipleChoiceField(queryset=dGroup.objects.all().filter(user_groups__rights=1), widget = forms.CheckboxSelectMultiple)
     #users_permissons = ""
 
+class LoginForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'password');
+    password = forms.CharField(widget=forms.PasswordInput)
+
 
 class GroupForm(forms.ModelForm):
     class Meta:

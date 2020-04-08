@@ -21,5 +21,6 @@ urlpatterns = (
     path('user/<int:user_id>/add_to_group/<int:group_id>', views.add_user_to_group, name='add_user_to_group'),
     path('user/<int:user_id>/delete_from_group/<int:group_id>', views.delete_user_from_group, name='delete_user_from_group'),
     path('discourse_sso/', views.discourse_sso, name='discourse_sso'),
+    path('discourse_sso_2/', views.discourse_sso_2, name='discourse_sso_2'),
 
 )

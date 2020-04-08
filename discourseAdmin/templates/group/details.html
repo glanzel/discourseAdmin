@@ -20,6 +20,11 @@
             </tr>
         </table>
         <br />
+        <b>Members</b><br>
+        {% for user in members %}
+            <span>{{ user }},</span>
+        {% endfor %}
+
         <br />
         <br />
         <input type="button" onclick="$('#add-form-div').toggle();" value="Edit group"><br /><br />

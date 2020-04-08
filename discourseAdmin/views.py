@@ -1,4 +1,5 @@
 import pdb, json
+import logging
 from django.shortcuts import render
 #from django.forms.models import model_to_dict
 from django.core import serializers
@@ -9,12 +10,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.middleware.csrf import get_token
-#from django3scaffold.http import JsonResponse
+from django3scaffold.http import JsonResponse
 from discourseAdmin.models import Participant, User
-from discourseAdmin.forms import UserForm
+from discourseAdmin.forms import UserForm, LoginForm
 from discourseAdmin.logic import Utils
 from doctest import DebugRunner
 from django.conf import settings
+from lib2to3.pgen2.tokenize import group
 
 
 @login_required
@@ -58,7 +60,14 @@ def user_details(request, id, template='user/details.html'):
     item = get_object_or_404(User, pk=id)
     #print(serializers.serialize('json', [ item, ]))
     d['user_groups'] = item.dgroup_set.all()
-    print(d['user_groups'])
+    #print(d['user_groups'])
+    #print(list(d['user_groups']))
+    #groupstr = map( str, list(d['user_groups']) )
+    #groupstr = [ str(t) for t in list(d['user_groups']) ]
+    #print(groupstr)
+    for group in list(d['user_groups']):
+        print(group)
+ 
     d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1, user_groups__user_id=request.user.id).exclude(id__in=d['user_groups'])
     #print(groups) 
     d['form'] = HasDiscoGroups()
@@ -83,8 +92,6 @@ def user_details(request, id, template='user/details.html'):
             return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
     d['user'] = User.objects.get(pk=id)
     return render(request, template, d)
-
-
 
 @login_required
 def user_delete(request, id):
@@ -115,7 +122,7 @@ def group_details(request, id, template='group/details.html'):
     d = {}
     item = get_object_or_404(dGroup, pk=id)
     #print(dGroup.objects.filter(id=1).all())
-    
+    d['members'] = item.members.all()
     
     d['form'] = GroupForm(instance=item)
     if request.method == 'POST':
@@ -154,7 +161,6 @@ def user_groups_delete(request, id):
     item = User_Groups.objects.get(pk=id)
     item.delete()
     return JsonResponse()
-
 
 from pydiscourse import DiscourseClient
 from django.core.serializers.json import DjangoJSONEncoder
@@ -232,8 +238,10 @@ def create_user(request, template='user/create.html'):
             item = form.save()
             item.set_password(item.password)
             item.save()
-            email = item.username + "@bekanntedomain.de"
-            dUser = client.create_user(item.username, item.username, email, item.password, active='true')
+            if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
+                item.email = '%s@%s' % (item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
+                
+            dUser = client.create_user(item.username, item.username, item.email, item.password, active='true')
             client.deactivate(dUser['user_id'])
             client.activate(dUser['user_id'])
             p = Participant(user = item, discourse_user=dUser['user_id'])
@@ -258,14 +266,96 @@ def create_user(request, template='user/create.html'):
 
 from django.contrib.auth import authenticate
 from pydiscourse import sso
-@login_required    
-def discourse_sso(request):
+# TODO: statt @login required sollte der benutzer nicht eingeloggt werden sondern nur gecheckt ob das passwort okay ist.
+    
+def discourse_sso(request, template='user/login.html'):
     print("discourse_sso")
+    d = {}
+    d["sso"] = payload = request.GET.get('sso')
+    d["sig"] = signature = request.GET.get('sig')
+    d['form'] = LoginForm()
+    if request.method == 'POST':
+        #print(request.POST['username'])
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        if user is not None:
+            #print(user.__dict__)
+            nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
+            #print(request.user.__dict__)
+            groups = user.dgroup_set.all()
+            groupstr = ', '.join(map(str, list(groups)))
+            if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
+                 request.user.email = '%s@%s' % (request.user.id, settings.DISCOURSE_INTERN_SSO_EMAIL) 
+            url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, request.user.email, request.user.id, request.user.username, add_groups=groupstr, groups=groupstr)
+            return redirect('http://localhost:3000' + url)
+        else:
+            return redirect('http://localhost:3000')
+    else:
+        print("ahah")
+        return render(request, template, d)
+    #return redirect('http://discuss.example.com' + url)
+
+#deprecated Methode
+import base64
+import hmac
+import hashlib
+from urllib import parse
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
+
+@login_required
+def discourse_sso_2(request):
+    '''
+    Code adapted from https://meta.discourse.org/t/sso-example-for-django/14258
+    '''
+    print("discourse_sso_2")
+
     payload = request.GET.get('sso')
     signature = request.GET.get('sig')
-    nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
-    print(request.user.__dict__)
-    url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, request.user.email, request.user.id, request.user.username)
-    return redirect('http://localhost:3000' + url)
-    #return redirect('http://discuss.example.com' + url)
+
+    if None in [payload, signature]:
+        return HttpResponseBadRequest('No SSO payload or signature. Please contact support if this problem persists.')
+
+    # Validate the payload
+
+    payload = bytes(parse.unquote(payload), encoding='utf-8')
+    decoded = base64.decodebytes(payload).decode('utf-8')
+    if len(payload) == 0 or 'nonce' not in decoded:
+        return HttpResponseBadRequest('Invalid payload. Please contact support if this problem persists.')
+
+    key = bytes(settings.DISCOURSE_SSO_KEY, encoding='utf-8')  # must not be unicode
+    h = hmac.new(key, payload, digestmod=hashlib.sha256)
+    this_signature = h.hexdigest()
+
+    if not hmac.compare_digest(this_signature, signature):
+        return HttpResponseBadRequest('Invalid payload. Please contact support if this problem persists.')
+
+    # Build the return payload
+    qs = parse.parse_qs(decoded)
+    user = request.user
+    params = {
+        'nonce': qs['nonce'][0],
+        'external_id': user.id,
+        'email': user.email,
+        'username': user.username,
+        'name': user.username,
+    }
+    print(params)
+    print(parse.urlencode(params))
+    print( bytes(parse.urlencode(params), 'utf-8') )
+    print(base64.encodebytes(bytes(parse.urlencode(params), 'utf-8')))
+
+    return_payload = base64.encodebytes(bytes(parse.urlencode(params), 'utf-8'))
+    #return_payload = base64.b64encode(parse.urlencode(params).encode('ascii'))
+    
+    h = hmac.new(key, return_payload, digestmod=hashlib.sha256)
+    query_string = parse.urlencode({'sso': return_payload, 'sig': h.hexdigest()})
+
+
+
+    # Redirect back to Discourse
+
+    discourse_sso_url = '{0}/session/sso_login?{1}'.format(settings.DISCOURSE_BASE_URL, query_string)
+    logger = logging.getLogger(__name__)
+    logger.warning("discourse redirect url: %s", discourse_sso_url)
+    return HttpResponseRedirect(discourse_sso_url)
+
 
