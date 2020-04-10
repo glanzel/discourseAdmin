@@ -252,7 +252,8 @@ def create_user(request, template='user/create.html'):
                 item.email = '%s%s@%s' % ("da", item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
                 print(item.email)
             item.save()
-                
+            
+            #der benutzer wird in discourse schon erzeugt damit gruppen etc, bereits gesetzt werden können. external_id kann aber erst beim sso login gesetzt werden    
             dUser = client.create_user(item.username, item.username, item.email, item.password, active='true')
             client.deactivate(dUser['user_id']), 
             client.activate(dUser['user_id'])
@@ -284,7 +285,18 @@ def discourse_sso(request, template='user/login.html'):
     if request.method == 'POST':
         #print(request.POST['username'])
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-        print(user.participant.id);
+ 
+        # checken ob stattdessen ein Php Benutzer besteht
+        if user is None:
+            if Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']):
+                user = User.objects.filter(username=request.POST['username']).get()
+                user.set_password(request.POST['password'])
+                user.save()
+
+        print(user)
+
+        
+        # wenn Benutzer valide sso validierung mit gruppen ausliefern  
         if user is not None:
             nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
             #print(user.__dict__)
