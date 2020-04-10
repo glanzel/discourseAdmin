@@ -16,7 +16,8 @@ from discourseAdmin.forms import UserForm, LoginForm
 from discourseAdmin.logic import Utils
 from doctest import DebugRunner
 from django.conf import settings
-from lib2to3.pgen2.tokenize import group
+#from lib2to3.pgen2.tokenize import group # wo kommt das her ?
+#from __builtin__ import True # und was soll das  ?
 
 
 @login_required
@@ -144,6 +145,22 @@ def group_delete(request, id):
 
 from discourseAdmin.models import User_Groups
 @login_required
+def activate_user(request, user_id):
+    #TODO: check authorisation
+    user = User.objects.get(id=user_id)
+    user.is_active = True
+    user.save()
+    print(user.__dict__)
+    # TODO: lieber discourse_user (das ist ne id) nehmen? dann aber daten overhead ?
+    # ist dieser Teil wegen sso eventuell jetzt obsolete ? vermutlich.
+    client = Utils.getDiscourseClient()
+    dUser = client.user(username=user.username)
+    print(dUser['id'])
+    client.deactivate(dUser['id'])
+    client.activate(dUser['id'])
+    return redirect('user-list')
+
+@login_required
 def add_user_to_group(request, user_id, group_id):
     #TODO: check authorisation
     ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
@@ -256,7 +273,6 @@ def create_user(request, template='user/create.html'):
             #der benutzer wird in discourse schon erzeugt damit gruppen etc, bereits gesetzt werden können. external_id kann aber erst beim sso login gesetzt werden    
             dUser = client.create_user(item.username, item.username, item.email, item.password, active='true')
             client.deactivate(dUser['user_id']), 
-            client.activate(dUser['user_id'])
             p = Participant(user = item, discourse_user=dUser['user_id'])
             p.save()
             

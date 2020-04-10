@@ -17,6 +17,7 @@ urlpatterns = (
     path('user/<int:id>/edit/', views.user_edit, name='user-edit'),
     path('import_groups', views.import_dgroups, name='import_dgroups'),
     path('import_users', views.import_users, name='import_users'),
+    path('user/<int:user_id>/activate', views.activate_user, name='activate_user'),
     path('create_user', views.create_user, name='create_user'),
     path('user/<int:user_id>/add_to_group/<int:group_id>', views.add_user_to_group, name='add_user_to_group'),
     path('user/<int:user_id>/delete_from_group/<int:group_id>', views.delete_user_from_group, name='delete_user_from_group'),

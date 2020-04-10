@@ -9,12 +9,21 @@
             <th style="padding: 10px;">ID</th>
             <th>Name</th>
             <th>Action</th>
+            <th>Active</th>
         </tr>
     {% for item in user_list %}
         <tr>
             <td style="padding: 10px;">{{ item.id }}</td>
             <td>{{ item }}</td>
             <td><a href="{% url 'user-details' item.id %}">show</a></td>
+            <td>
+            {% if item.is_active %}
+                y
+            {% else %}
+                <a href="{% url 'activate_user' item.id %}">activate</a>
+            {% endif %}
+            
+            </td>
         </tr>
     {% endfor %}
     </table>

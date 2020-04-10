@@ -6,7 +6,7 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         #fields = "__all__"
-        fields = ('username', 'is_active', 'password');
+        fields = ('username', 'password');
     password = forms.CharField(widget=forms.PasswordInput)
     #dgroup_set = forms.ModelMultipleChoiceField(queryset=dGroup.objects.all().filter(user_groups__rights=1), widget = forms.CheckboxSelectMultiple)
     #users_permissons = ""
