@@ -35,12 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'discourseAdmin',
     'dsso',
-    'testapp',
     'generic_scaffold',
-    'django_baker',
-    'baker',
     'django3scaffold',
-    'forum',
     'debug_toolbar',
 ]
 

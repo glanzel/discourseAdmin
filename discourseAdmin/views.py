@@ -203,23 +203,34 @@ def import_users(request):
     usersDict = client.users()
     for userDict in usersDict:
         userObj, created = User.objects.get_or_create(username=userDict['username'])
+
         #print(userObj.__dict__)
         #print(created)
+        
         if created: 
+            userDetails = client.user_all(user_id=userDict['id'])
+            ssoDetails = userDetails['single_sign_on_record']         
+            if ssoDetails != None :
+                print(ssoDetails['external_email'])
+                userObj.email = ssoDetails['external_email']
+
             for key in userDict:
                 if key != "id":
                     setattr(userObj, key, userDict[key])
+
             userObj.save();
+
         else :
             #TODO overwrite Userdata in Discourse
             print("TODO")
+        
         try:
             p = userObj.participant
         except:
             p = Participant(user = userObj)
         p.discourse_user=discourse_user=userDict['id']
         p.save();
-            
+             
         print(userDict)
         print("-");
         print(userObj.__dict__)
@@ -237,20 +248,17 @@ def create_user(request, template='user/create.html'):
         if form.is_valid():
             item = form.save()
             item.set_password(item.password)
-            item.save()
             if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
-                item.email = '%s@%s' % (item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
+                item.email = '%s%s@%s' % ("da", item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
+                print(item.email)
+            item.save()
                 
             dUser = client.create_user(item.username, item.username, item.email, item.password, active='true')
-            client.deactivate(dUser['user_id'])
+            client.deactivate(dUser['user_id']), 
             client.activate(dUser['user_id'])
             p = Participant(user = item, discourse_user=dUser['user_id'])
             p.save()
             
-            #item.discourse_user_id = dUser['user_id']
-            #form.discourse_user_id = dUser['user_id']
-            #item.save()
-            #form.save()
             print("******************* item dict *****************")
             print(item.__dict__)
             print("******************* form dict *****************")
@@ -266,7 +274,6 @@ def create_user(request, template='user/create.html'):
 
 from django.contrib.auth import authenticate
 from pydiscourse import sso
-# TODO: statt @login required sollte der benutzer nicht eingeloggt werden sondern nur gecheckt ob das passwort okay ist.
     
 def discourse_sso(request, template='user/login.html'):
     print("discourse_sso")
@@ -277,15 +284,16 @@ def discourse_sso(request, template='user/login.html'):
     if request.method == 'POST':
         #print(request.POST['username'])
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        print(user.participant.id);
         if user is not None:
-            #print(user.__dict__)
             nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
-            #print(request.user.__dict__)
+            #print(user.__dict__)
             groups = user.dgroup_set.all()
             groupstr = ', '.join(map(str, list(groups)))
-            if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
-                 request.user.email = '%s@%s' % (request.user.id, settings.DISCOURSE_INTERN_SSO_EMAIL) 
-            url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, request.user.email, request.user.id, request.user.username, add_groups=groupstr, groups=groupstr)
+#             if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
+#                  user.email = '%s@%s' % (user.id, settings.DISCOURSE_INTERN_SSO_EMAIL) 
+            print(user.__dict__)
+            url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, user.email, user.participant.id, user.username, add_groups=groupstr, groups=groupstr)
             return redirect('http://localhost:3000' + url)
         else:
             return redirect('http://localhost:3000')
@@ -293,69 +301,5 @@ def discourse_sso(request, template='user/login.html'):
         print("ahah")
         return render(request, template, d)
     #return redirect('http://discuss.example.com' + url)
-
-#deprecated Methode
-import base64
-import hmac
-import hashlib
-from urllib import parse
-from django.http import HttpResponseBadRequest, HttpResponseRedirect
-
-@login_required
-def discourse_sso_2(request):
-    '''
-    Code adapted from https://meta.discourse.org/t/sso-example-for-django/14258
-    '''
-    print("discourse_sso_2")
-
-    payload = request.GET.get('sso')
-    signature = request.GET.get('sig')
-
-    if None in [payload, signature]:
-        return HttpResponseBadRequest('No SSO payload or signature. Please contact support if this problem persists.')
-
-    # Validate the payload
-
-    payload = bytes(parse.unquote(payload), encoding='utf-8')
-    decoded = base64.decodebytes(payload).decode('utf-8')
-    if len(payload) == 0 or 'nonce' not in decoded:
-        return HttpResponseBadRequest('Invalid payload. Please contact support if this problem persists.')
-
-    key = bytes(settings.DISCOURSE_SSO_KEY, encoding='utf-8')  # must not be unicode
-    h = hmac.new(key, payload, digestmod=hashlib.sha256)
-    this_signature = h.hexdigest()
-
-    if not hmac.compare_digest(this_signature, signature):
-        return HttpResponseBadRequest('Invalid payload. Please contact support if this problem persists.')
-
-    # Build the return payload
-    qs = parse.parse_qs(decoded)
-    user = request.user
-    params = {
-        'nonce': qs['nonce'][0],
-        'external_id': user.id,
-        'email': user.email,
-        'username': user.username,
-        'name': user.username,
-    }
-    print(params)
-    print(parse.urlencode(params))
-    print( bytes(parse.urlencode(params), 'utf-8') )
-    print(base64.encodebytes(bytes(parse.urlencode(params), 'utf-8')))
-
-    return_payload = base64.encodebytes(bytes(parse.urlencode(params), 'utf-8'))
-    #return_payload = base64.b64encode(parse.urlencode(params).encode('ascii'))
-    
-    h = hmac.new(key, return_payload, digestmod=hashlib.sha256)
-    query_string = parse.urlencode({'sso': return_payload, 'sig': h.hexdigest()})
-
-
-
-    # Redirect back to Discourse
-
-    discourse_sso_url = '{0}/session/sso_login?{1}'.format(settings.DISCOURSE_BASE_URL, query_string)
-    logger = logging.getLogger(__name__)
-    logger.warning("discourse redirect url: %s", discourse_sso_url)
-    return HttpResponseRedirect(discourse_sso_url)
 
 

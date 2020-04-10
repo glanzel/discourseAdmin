@@ -1,8 +1,6 @@
 
 {% extends "discourse_base.html" %}
 
-{% block page-title %}user{% endblock %}
-
 {% block content %}
     <div id="add-form-div">
         <form action="{% url 'create_user' %}" method="POST" id="add-form">

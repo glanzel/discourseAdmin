@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -24,8 +25,8 @@ class dGroup(models.Model):
 
     description = models.CharField(max_length=255, null=True, blank=True)
 
-    update_date = models.DateTimeField(auto_now=True)
-    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(auto_now=True, null=True)
+    create_date = models.DateTimeField(auto_now_add=True, null=True)
 
     members = models.ManyToManyField(User, through='User_Groups')
     
@@ -37,8 +38,9 @@ class dGroup(models.Model):
 
 
 class Participant(models.Model):
+    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False) 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    department = models.ForeignKey(dGroup, on_delete=models.CASCADE, related_name="department")
+    department = models.ForeignKey(dGroup, on_delete=models.CASCADE, null=True, related_name="department")
     discourse_user = models.CharField(max_length=255, null=True, blank=True)
     #groups = models.ManyToManyField(Group, through='User_Groups', related_name="groups")
 
@@ -53,8 +55,8 @@ class User_Groups(models.Model):
 
     rights = models.IntegerField(null=True, default=None)
 
-    update_date = models.DateTimeField(auto_now=True)
-    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(auto_now=True, null=True)
+    create_date = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         ordering = ['-id']

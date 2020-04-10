@@ -23,8 +23,6 @@ from discourse_django_sso import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('baker/', include('baker.urls')),
-    path(r'', include('forum.urls')),
     path(r'', include('discourseAdmin.urls')),
 
 ]
