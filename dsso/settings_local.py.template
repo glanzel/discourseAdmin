@@ -16,6 +16,9 @@ DISCOURSE_SSO_KEY = 'test-abcd'
 DISCOURSE_SSO_REDIRECT = 'http://localhost/test'
 DISCOURSE_SSO_URL = 'http://www.olcms.org/sso'
 
+PHP_LOGIN_CHECK_URI = None
+PHP_LOGIN_CHECK_AUTH = None
+
 INTERNAL_IPS = [
     'localhost'
     '127.0.0.1',
