@@ -31,7 +31,8 @@ class dGroup(models.Model):
     members = models.ManyToManyField(User, through='User_Groups')
     
     def __str__(self):
-        return self.name
+        if self.name !=None: return self.name
+        else: return "leer"
     
     class Meta:
         ordering = ['-id']
@@ -44,6 +45,9 @@ class Participant(models.Model):
     discourse_user = models.CharField(max_length=255, null=True, blank=True)
     #groups = models.ManyToManyField(Group, through='User_Groups', related_name="groups")
 
+    def __str__(self):
+        return "test2" #self.discourse_user+" "
+ 
 
 from django.contrib.auth.models import User
 
@@ -60,3 +64,4 @@ class User_Groups(models.Model):
 
     class Meta:
         ordering = ['-id']
+ 

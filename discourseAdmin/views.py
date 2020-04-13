@@ -16,6 +16,7 @@ from discourseAdmin.forms import UserForm, LoginForm
 from discourseAdmin.logic import Utils
 from doctest import DebugRunner
 from django.conf import settings
+from pip._vendor.colorama.ansi import Fore
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
@@ -23,16 +24,14 @@ from django.conf import settings
 @login_required
 def user_list(request, template='user/list.html'):
     d = {}
-    d['form'] = UserForm()
-    if request.method == 'POST':
-        form = UserForm(request.POST)
-        if form.is_valid():
-            item = form.save()
-            return JsonResponse(data={'id': item.id, 'name': str(item), 'form': UserForm().as_p(), 'token': get_token(request)})
-        else:
-            d['form'] = form
-            return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
+
     d['user_list'] = User.objects.all()
+    if request.method == 'GET':
+        filters = {}
+        for key in request.GET:
+            if request.GET[key] == 'True': filters[key] = True
+            if request.GET[key] == 'False': filters[key] = False
+        d['user_list'] = d['user_list'].filter(**filters)
     return render(request, template, d)
 
 from discourseAdmin.forms import UserForm
@@ -162,8 +161,10 @@ def activate_user(request, user_id):
 
 @login_required
 def add_user_to_group(request, user_id, group_id):
-    #TODO: check authorisation
-    ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
+    try: is_admin = User_Groups.objects.get(user_id=request.user.id, group_id = group_id)
+    except: print("except")
+    else: 
+        if is_admin.rights > 0 : ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
     return redirect('user-details', id=user_id)
 
 @login_required
@@ -265,6 +266,7 @@ def create_user(request, template='user/create.html'):
         if form.is_valid():
             item = form.save()
             item.set_password(item.password)
+            item.is_active = False
             if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
                 item.email = '%s%s@%s' % ("da", item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
                 print(item.email)

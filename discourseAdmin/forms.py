@@ -11,6 +11,12 @@ class UserForm(forms.ModelForm):
     #dgroup_set = forms.ModelMultipleChoiceField(queryset=dGroup.objects.all().filter(user_groups__rights=1), widget = forms.CheckboxSelectMultiple)
     #users_permissons = ""
 
+class DetailUserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = "__all__"
+
+
 class LoginForm(forms.ModelForm):
     class Meta:
         model = User

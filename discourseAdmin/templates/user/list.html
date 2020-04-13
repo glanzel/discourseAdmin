@@ -3,7 +3,12 @@
 {% block page-title %}user{% endblock %}
 
 {% block content %}
-    <h1>user list</h1><br />
+    <h4>user list</h4><br />
+    <a href="{% url 'user-list' %}">all</a> |
+    <a href="{% url 'user-list' %}?is_active=False">inactive</a> |
+    <a href="{% url 'user-list' %}?is_staff=True">staff</a> |
+    <a href="{% url 'user-list'  %}?is_superuser=True">admins</a> 
+    
     <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
         <tr style="background-color: #DDD">
             <th style="padding: 10px;">ID</th>
@@ -28,16 +33,6 @@
     {% endfor %}
     </table>
     <br />
-    <input type="button" onclick="$('#add-form-div').toggle();" value="Add new user"><br /><br />
-    <div id="add-form-div" style="display: none;">
-        <form action="{% url 'user-list' %}" method="POST" id="add-form">
-                <div id="form-fields">
-                    {% csrf_token %}
-                    {{ form }}
-                </div>
-                <input type="submit" value="Submit" />
-        </form>
-    </div>
 
     <script type="text/javascript">
         (new FormHelper('add-form')).bind_for_ajax(
