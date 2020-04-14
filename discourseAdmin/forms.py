@@ -27,8 +27,9 @@ class LoginForm(forms.ModelForm):
 class GroupForm(forms.ModelForm):
     class Meta:
         model = dGroup
-        fields = "__all__"
-    members = forms.ModelMultipleChoiceField(queryset=User.objects.all(), widget = forms.CheckboxSelectMultiple)
+        #fields = "__all__"
+        fields = ('name', 'description')
+    #members = forms.ModelMultipleChoiceField(queryset=User.objects.all(), widget = forms.CheckboxSelectMultiple)
 
 
 from discourseAdmin.models import User_Groups

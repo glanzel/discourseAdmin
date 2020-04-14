@@ -19,6 +19,8 @@ DISCOURSE_SSO_URL = 'http://www.olcms.org/sso'
 PHP_LOGIN_CHECK_URI = None
 PHP_LOGIN_CHECK_AUTH = None
 
+DISCOURSE_FORCE_TOPIC = None
+
 INTERNAL_IPS = [
     'localhost'
     '127.0.0.1',

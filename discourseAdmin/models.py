@@ -24,6 +24,8 @@ class dGroup(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
 
     description = models.CharField(max_length=255, null=True, blank=True)
+    
+    discourse_group_id = models.IntegerField(null=True, unique=True)
 
     update_date = models.DateTimeField(auto_now=True, null=True)
     create_date = models.DateTimeField(auto_now_add=True, null=True)

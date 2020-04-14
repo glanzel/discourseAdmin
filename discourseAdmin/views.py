@@ -1,5 +1,6 @@
 import pdb, json
 import logging
+import datetime
 from django.shortcuts import render
 #from django.forms.models import model_to_dict
 from django.core import serializers
@@ -25,7 +26,7 @@ from pip._vendor.colorama.ansi import Fore
 def user_list(request, template='user/list.html'):
     d = {}
 
-    d['user_list'] = User.objects.all()
+    d['user_list'] = User.objects.all().order_by('-date_joined', '-last_login')
     if request.method == 'GET':
         filters = {}
         for key in request.GET:
@@ -58,24 +59,11 @@ from discourseAdmin.forms import HasDiscoGroups
 def user_details(request, id, template='user/details.html'):
     d = {}
     item = get_object_or_404(User, pk=id)
-    #print(serializers.serialize('json', [ item, ]))
     d['user_groups'] = item.dgroup_set.all()
-    #print(d['user_groups'])
-    #print(list(d['user_groups']))
-    #groupstr = map( str, list(d['user_groups']) )
-    #groupstr = [ str(t) for t in list(d['user_groups']) ]
-    #print(groupstr)
-    for group in list(d['user_groups']):
-        print(group)
  
     d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1, user_groups__user_id=request.user.id).exclude(id__in=d['user_groups'])
-    #print(groups) 
     d['form'] = HasDiscoGroups()
-    
-    #return render(request, template, d)
-    #d['form'] = HasDiscoGroups([(1,2)])
-    
-    #print(d['form']) 
+  
     
     if request.method == 'POST':
         print(request.POST)
@@ -84,7 +72,6 @@ def user_details(request, id, template='user/details.html'):
         if form.is_valid():
             print(form.cleaned_data)
             item = form.save()
-            #print(item)
             #form.save_m2m()
             return JsonResponse(data={'form': UserForm(instance=item).as_p(), 'token': get_token(request)})
         else:
@@ -104,16 +91,27 @@ from discourseAdmin.forms import GroupForm
 @login_required
 def group_list(request, template='group/list.html'):
     d = {}
+    d['group_list'] = dGroup.objects.all()
+    return render(request, template, d)
+
+def group_create(request, template='group/create.html'):
+    d = {}
     d['form'] = GroupForm()
     if request.method == 'POST':
         form = GroupForm(request.POST)
         if form.is_valid():
             item = form.save()
-            return JsonResponse(data={'id': item.id, 'name': str(item), 'form': GroupForm().as_p(), 'token': get_token(request)})
+            #print(item)
+            client = Utils.getDiscourseClient()
+            groupDict = client.create_group(name=item.name)
+            item.discourse_group_id = groupDict['basic_group']['id']
+            item.save()
+            print(groupDict)
+            return redirect('group-list')
         else:
             d['form'] = form
+            print(form)
             return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
-    d['group_list'] = dGroup.objects.all()
     return render(request, template, d)
 
 from discourseAdmin.forms import GroupForm
@@ -182,29 +180,32 @@ def user_groups_delete(request, id):
 
 from pydiscourse import DiscourseClient
 from django.core.serializers.json import DjangoJSONEncoder
-@login_required    
+@login_required
+#import_dgroups aktualisiert von discourse -> discourseAdmin (bitte vorsichtig verwenden)    
 def import_dgroups(request):
     client = Utils.getDiscourseClient()
     groupsDict = client.groups()
     for groupDict in groupsDict:
-        groupObj, created = dGroup.objects.get_or_create(id=groupDict['id'])
-        if created: 
-            print(groupDict)
-            print("-");
-            
-            groupObj = dGroup();
-            for key in groupDict:
+        groupObj, created = dGroup.objects.get_or_create(discourse_group_id=groupDict['id'])
+        print("import: "+str(groupDict['id'])+" : "+groupDict['name'])
+
+        for key in groupDict:
+            if key != "id":
                 setattr(groupObj, key, groupDict[key])
-                #print(groupDict[key]) 
-            #groups.append(json.loads(groupJson))
-            print(groupObj.__dict__)
-            print("-");
-            groupObj.save();
-        else:
-            print("TODO?")
-            #TODO: Discourse group aktualisieren ?      
+
+        if created: 
+            print("created")
+            groupObj.create_date = datetime.datetime.now()
+        else: 
+            print("already exists") #TODO: Discourse group aktualisieren ?      
+            groupObj.update_date = datetime.datetime.now()
+        
+        groupObj.discourse_group_id = groupDict['id']         
+        groupObj.save();
+
+        print("-");
         groupDetails = client.group(groupDict['name'])
-        print(groupDetails)
+        #print(groupDetails)
         for member in groupDetails['members']:
             p = Participant.objects.get(discourse_user=member['id'])
             ug, create = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
@@ -283,7 +284,7 @@ def create_user(request, template='user/create.html'):
             print("******************* form dict *****************")
             print(form.__dict__)
             print("-----")
-            return JsonResponse(data={'id': item.id, 'name': str(item), 'form': UserForm().as_p(), 'token': get_token(request)})
+            return redirect('http://localhost:3000' + url)
         else:
             d['form'] = form
             return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
@@ -312,7 +313,8 @@ def discourse_sso(request, template='user/login.html'):
                 user.save()
 
         print(user)
-
+        
+        Utils.watchImportantTopic(request, user.username)
         
         # wenn Benutzer valide sso validierung mit gruppen ausliefern  
         if user is not None:
@@ -332,4 +334,9 @@ def discourse_sso(request, template='user/login.html'):
         return render(request, template, d)
     #return redirect('http://discuss.example.com' + url)
 
-
+def testpd(request):
+    client = Utils.getDiscourseClient()
+    #client.groups()
+    result = client.watch_topic(57, username="heiner", notification_level=3)
+    print(result)
+    return JsonResponse()
