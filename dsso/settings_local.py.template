@@ -19,7 +19,8 @@ DISCOURSE_SSO_URL = 'http://www.olcms.org/sso'
 PHP_LOGIN_CHECK_URI = None
 PHP_LOGIN_CHECK_AUTH = None
 
-DISCOURSE_FORCE_TOPIC = None
+# Format: Mitglieder der Gruppen gruppen_id werden gezwungen die topic_ids anzugucken {"gruppen_id":  ['topic_id1', 'topic2']}
+#DISCOURSE_FORCE_TOPIC = {1: ["1", "5", "6"], 2: ["5", "3", "4"]} 
 
 INTERNAL_IPS = [
     'localhost'
