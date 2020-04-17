@@ -326,9 +326,9 @@ def discourse_sso(request, template='user/login.html'):
 #                  user.email = '%s@%s' % (user.id, settings.DISCOURSE_INTERN_SSO_EMAIL) 
             print(user.__dict__)
             url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, user.email, user.participant.id, user.username, add_groups=groupstr, groups=groupstr)
-            return redirect('http://localhost:3000' + url)
+            return redirect(settings.DISCOURSE_BASE_URL + url)
         else:
-            return redirect('http://localhost:3000')
+            return redirect(settings.DISCOURSE_BASE_URL)
     else:
         print("ahah")
         return render(request, template, d)
