@@ -2,4 +2,5 @@ Django
 pydiscourse
 requests
 django3scaffold
+setuptools
 mysqlclient
