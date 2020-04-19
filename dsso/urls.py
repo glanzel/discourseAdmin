@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
-from discourse_django_sso import views
+#from discourse_django_sso import views
 
 #from crudbuilder import urls
 
@@ -29,16 +29,16 @@ urlpatterns = [
 
 #urlpatterns += post_crud.get_url_patterns()
 
-urlpatterns = [
-    path(
-        'sso/',
-        views.SSOProviderView.as_view(
-            sso_redirect=settings.DISCOURSE_SSO_REDIRECT,
-            sso_secret=settings.DISCOURSE_SSO_KEY
-        ),
-        name="sso"
-    ),
-] + urlpatterns
+# urlpatterns = [
+#     path(
+#         'sso/',
+#         views.SSOProviderView.as_view(
+#             sso_redirect=settings.DISCOURSE_SSO_REDIRECT,
+#             sso_secret=settings.DISCOURSE_SSO_KEY
+#         ),
+#         name="sso"
+#     ),
+# ] + urlpatterns
 
 
 
