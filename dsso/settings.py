@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'discourseAdmin',
     'dsso',
     'django3scaffold',
-    'debug_toolbar',
+    #'debug_toolbar', # eventuell später einbauen ?
 ]
 
 MIDDLEWARE = [
