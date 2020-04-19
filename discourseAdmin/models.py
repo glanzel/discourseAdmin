@@ -64,6 +64,13 @@ class User_Groups(models.Model):
     update_date = models.DateTimeField(auto_now=True, null=True)
     create_date = models.DateTimeField(auto_now_add=True, null=True)
 
+    def isGroupAdmin(user_id, group_id):
+        try: is_admin = User_Groups.objects.get(user_id=user_id, group_id = group_id)
+        except: None
+        else: 
+            if is_admin.rights > 0 : return True 
+        return False 
+
     class Meta:
         ordering = ['-id']
  

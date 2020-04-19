@@ -143,11 +143,12 @@ def group_delete(request, id):
 from discourseAdmin.models import User_Groups
 @login_required
 def activate_user(request, user_id):
-    #TODO: check authorisation
+    #TODO: check authorisation ? Nö darf jede aus dem Staff
     user = User.objects.get(id=user_id)
     user.is_active = True
     user.save()
     print(user.__dict__)
+    
     # TODO: lieber discourse_user (das ist ne id) nehmen? dann aber daten overhead ?
     # ist dieser Teil wegen sso eventuell jetzt obsolete ? vermutlich.
     client = Utils.getDiscourseClient()
@@ -155,21 +156,26 @@ def activate_user(request, user_id):
     print(dUser['id'])
     client.deactivate(dUser['id'])
     client.activate(dUser['id'])
+
     return redirect('user-list')
 
 @login_required
 def add_user_to_group(request, user_id, group_id):
-    try: is_admin = User_Groups.objects.get(user_id=request.user.id, group_id = group_id)
-    except: print("except")
-    else: 
-        if is_admin.rights > 0 : ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
+    if User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id) : 
+        ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
+        client = Utils.getDiscourseClient()
+        client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
+
     return redirect('user-details', id=user_id)
 
 @login_required
 def delete_user_from_group(request, user_id, group_id):
-    #TODO: check authorisation
-    ug = User_Groups.objects. get(user_id=user_id, group_id = group_id)
-    ug.delete()
+    if User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id) : 
+        ug = User_Groups.objects. get(user_id=user_id, group_id = group_id)
+        ug.delete()
+        client = Utils.getDiscourseClient()
+        client.delete_group_member(ug.group.discourse_group_id,ug.user.participant.discourse_user)
+
     return redirect('user-details', id=user_id)
 
 @login_required    
