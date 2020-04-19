@@ -2,3 +2,4 @@ Django
 pydiscourse
 requests
 django3scaffold
+mysqlclient
