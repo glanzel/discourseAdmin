@@ -69,11 +69,13 @@
     
     <a href="{% url 'group-list' %}">{% trans 'Groups' %}</a>
     <a href="{% url 'group-create' %}">{% trans '+Group' %}</a>
-    <span>|</span>
-    <a href="{% url 'import_dgroups' %}">{% trans 'Import Groups' %}</a>
-    <a href="{% url 'import_users' %}">{% trans 'Import Users' %}</a>
-    <span>|</span>
-    <a href="{% url 'admin:index' %}">{% trans 'Django-Admin' %}</a>
+    {% if user.is_active and user.is_superuser %}
+        <span>|</span>
+        <a href="{% url 'import_dgroups' %}">{% trans 'Import Groups' %}</a>
+        <a href="{% url 'import_users' %}">{% trans 'Import Users' %}</a>
+        <span>|</span>
+        <a href="{% url 'admin:index' %}">{% trans 'Django-Admin' %}</a>
+    {% endif %}
     <span>|</span>
     <a href="{% url 'admin:logout' %}">{% trans 'logout' %}</a>
  
