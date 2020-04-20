@@ -303,6 +303,9 @@ from pydiscourse import sso
     
 def discourse_sso(request, template='user/login.html'):
     print("discourse_sso")
+    #print(request.method)
+    print(request)
+    
     d = {}
     d["sso"] = payload = request.GET.get('sso')
     d["sig"] = signature = request.GET.get('sig')

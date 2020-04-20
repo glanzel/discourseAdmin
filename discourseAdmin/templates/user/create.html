@@ -4,9 +4,9 @@
 {% block content %}
     <div id="add-form-div">
         <form action="{% url 'create_user' %}" method="POST" id="add-form">
-                <div id="form-fields">
+                <div id="form-fields" class="wide aligned module">
                     {% csrf_token %}
-                    {{ form.as_ul }}
+                    {{ form.as_p }}
                 </div>
                 <input type="submit" value="Submit" />
         </form>

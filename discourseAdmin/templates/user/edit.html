@@ -5,15 +5,13 @@
 
 {% block content %}
     <div class="item">
-        <h1>user - {{ user }} </h1><br />
+        <h1>Edit user - {{ user }} </h1><br />
         <br />
-        <br />
-        <input type="button" onclick="$('#add-form-div').toggle();" value="Edit user"><br /><br />
         <div id="add-form-div" >
             <form action="{% url 'user-details' user.id %}" method="POST" id="add-form">
-                    <div id="form-fields">
+                    <div id="form-fields" class="wide aligned module">
                         {% csrf_token %}
-                        {{ form.as_table }}
+                        {{ form.as_p }}
                     </div>
                     <input type="submit" value="Submit" />
             </form>

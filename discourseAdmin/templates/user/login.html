@@ -4,19 +4,17 @@
 
 {% block content %}
     <div class="item">
+    <h4> Login to Discourse </h4>
         <br />
-        <br />
-        <input type="button" onclick="$('#add-form-div').toggle();" value="Login user"><br /><br />
         <div id="add-form-div" >
             <form action="{% url 'discourse_sso' %}?sso={{sso}}&sig={{sig}}" method="POST" id="add-form">
-                    <div id="form-fields">
+                    <div id="form-fields" class="wide aligned module">
                         {% csrf_token %}
-                        {{ form.as_table }}
+                        {{ form.as_p }}
                     </div>
                     <input type="submit" value="Submit" />
             </form>
         </div>
     </div>
 
-    <a href="{% url 'user-list' %}">back to list</a>
 {% endblock %}

@@ -9,11 +9,13 @@
         <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
             <tr style="background-color: #DDD">
                 <th style="padding: 10px;">ID</th>
-                <th>NameT</th>
+                <th style="padding: 10px;">D-ID</th>
+                <th>Name</th>
                 <th>Action</th>
             </tr>
             <tr>
-                <td style="padding: 10px;">{{ groups.id }}</td>
+                <td style="padding: 10px;">{{ group.id }}</td>
+                <td style="padding: 10px;">{{ group.discourse_group_id }}</td>
                 <td>{{ group }}</td>
                 <td><input type="button" href="{% url 'group-delete' group.id %}" id="delete-item" value="delete" />
                 </td>
@@ -30,9 +32,9 @@
         <input type="button" onclick="$('#add-form-div').toggle();" value="Edit group"><br /><br />
         <div id="add-form-div" style="display: none;">
             <form action="{% url 'group-details' group.id %}" method="POST" id="add-form">
-                    <div id="form-fields">
+                    <div id="form-fields" class="wide aligned module">
                         {% csrf_token %}
-                        {{ form.as_ul }}
+                        {{ form.as_p }}
                     </div>
                     <input type="submit" value="Submit" />
             </form>
@@ -61,5 +63,4 @@
             });
         });
     </script>
-    <a href="{% url 'group-list' %}">back to the list</a>
 {% endblock %}

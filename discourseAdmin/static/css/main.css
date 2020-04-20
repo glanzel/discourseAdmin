@@ -1,3 +1,16 @@
 .breadcrumbs a,span{
     padding: 0 6px 0 6px;
 }
+
+form .wide p{
+    margin-left:0px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.wide span {
+    color: grey;
+    font-size: 11px;
+    display: block;
+    margin-left:200px;
+}

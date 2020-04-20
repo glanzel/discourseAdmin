@@ -4,6 +4,7 @@
 <head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
+<link rel="stylesheet" type="text/css" href="{% block stylesheet_form%}{% static "admin/css/forms.css" %}{% endblock %}">
 {% block extrastyle %}
 <link rel="stylesheet" type="text/css" href="{% static "css/main.css" %}">
 
@@ -67,7 +68,6 @@
     <span>|</span>
     
     <a href="{% url 'group-list' %}">{% trans 'Groups' %}</a>
-    <span>|</span>
     <a href="{% url 'group-create' %}">{% trans '+Group' %}</a>
     <span>|</span>
     <a href="{% url 'import_dgroups' %}">{% trans 'Import Groups' %}</a>
