@@ -160,6 +160,16 @@ def activate_user(request, user_id):
     return redirect('user-list')
 
 @login_required
+def deactivate_user(request, user_id):
+    #TODO: check authorisation ? Nö darf jede aus dem Staff
+    user = User.objects.get(id=user_id)
+    user.is_active = False
+    user.save()
+    
+    return redirect('user-list')
+
+
+@login_required
 def add_user_to_group(request, user_id, group_id):
     if User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id) : 
         ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
@@ -300,7 +310,11 @@ def create_user(request, template='user/create.html'):
 
 from django.contrib.auth import authenticate
 from pydiscourse import sso
-    
+from django.views.decorators.csrf import csrf_exempt
+
+
+
+@csrf_exempt
 def discourse_sso(request, template='user/login.html'):
     print("discourse_sso")
     #print(request.method)
@@ -308,7 +322,11 @@ def discourse_sso(request, template='user/login.html'):
     
     d = {}
     d["sso"] = payload = request.GET.get('sso')
+    if d["sso"] == None : d["sso"] = payload = request.POST['sso']
+    print(d["sso"])
     d["sig"] = signature = request.GET.get('sig')
+    if d["sig"] == None : d["sig"] = signature = request.POST['sig']
+    
     d['form'] = LoginForm()
     if request.method == 'POST':
         #print(request.POST['username'])
@@ -323,10 +341,10 @@ def discourse_sso(request, template='user/login.html'):
 
         print(user)
         
-        Utils.watchImportantTopic(request, user.username)
         
         # wenn Benutzer valide sso validierung mit gruppen ausliefern  
         if user is not None:
+            Utils.watchImportantTopic(request, user.username)
             nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
             #print(user.__dict__)
             groups = user.dgroup_set.all()
@@ -337,15 +355,18 @@ def discourse_sso(request, template='user/login.html'):
             url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, user.email, user.participant.id, user.username, add_groups=groupstr, groups=groupstr)
             return redirect(settings.DISCOURSE_BASE_URL + url)
         else:
-            return redirect(settings.DISCOURSE_BASE_URL)
+            return redirect(settings.DISCOURSE_BASE_URL + "/login/?alert=zugangsdaten sind falsch")
     else:
         print("ahah")
         return render(request, template, d)
     #return redirect('http://discuss.example.com' + url)
 
+@csrf_exempt
 def testpd(request):
-    client = Utils.getDiscourseClient()
+    #client = Utils.getDiscourseClient()
     #client.groups()
-    result = client.watch_topic(57, username="heiner", notification_level=3)
-    print(result)
+    #result = client.watch_topic(57, username="heiner", notification_level=3)
+    #print(result)
+    print(request.method)
+    print(request)
     return JsonResponse()

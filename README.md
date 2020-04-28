@@ -3,6 +3,7 @@ a more fine grained way of administrate discourse (uses sso)
 
 install
 
+0. sudo apt-get install libmysqlclient-dev (optional)
 1. clone the git:  
 2. install requirements: pip3 install -r requirements.txt -f .  (inside the clone directory)
 3. create 2 files from the dsso/*.template files
