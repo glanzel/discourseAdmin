@@ -4,7 +4,7 @@
 
 {% block content %}
     <div class="item">
-    <h4> Login to Discourse </h4>
+    <h3> Login to Discourse </h3>
         <br />
         <div id="add-form-div" >
             <form action="{% url 'discourse_sso' %}?sso={{sso}}&sig={{sig}}" method="POST" id="add-form">
@@ -16,5 +16,8 @@
             </form>
         </div>
     </div>
+    <br><br>
+    <a href="{% url 'create_user' %}"> Noch kein Account? Jetzt ein neues Konto erstellen</a>
+
 
 {% endblock %}

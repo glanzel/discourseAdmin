@@ -12,7 +12,7 @@ urlpatterns = (
     path('group/<int:id>/', views.group_details, name='group-details'),
     path('group/<int:id>/delete/', views.group_delete, name='group-delete'),
     
-    path('', views.user_list, name='user-list'),
+    path('', views.create_user, name='create_user'),
     path('user/', views.user_list, name='user-list'),
     path('user/<int:id>/', views.user_details, name='user-details'),
     path('user/<int:id>/delete/', views.user_delete, name='user-delete'),
@@ -24,6 +24,7 @@ urlpatterns = (
     path('user/<int:user_id>/activate', views.activate_user, name='activate_user'),
     path('user/<int:user_id>/deactivate', views.deactivate_user, name='deactivate_user'),
     path('create_user', views.create_user, name='create_user'),
+
     path('user/<int:user_id>/add_to_group/<int:group_id>', views.add_user_to_group, name='add_user_to_group'),
     path('user/<int:user_id>/delete_from_group/<int:group_id>', views.delete_user_from_group, name='delete_user_from_group'),
 

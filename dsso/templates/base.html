@@ -62,13 +62,18 @@
     <!-- END Header -->
     {% block breadcrumbs %}
     <div class="breadcrumbs">
+    {% if user.is_authenticated  %}
     <a href="{% url 'user-list' %}">{% trans 'Users' %}</a>
-     
     <a href="{% url 'create_user' %}">{% trans '+User' %}</a>
     <span>|</span>
-    
     <a href="{% url 'group-list' %}">{% trans 'Groups' %}</a>
     <a href="{% url 'group-create' %}">{% trans '+Group' %}</a>
+    {% else %}       
+    <a href="{% url 'create_user' %}">{% trans 'Konto erstellen' %}</a>
+    <span>|</span>
+    <a href="#">{% trans 'Passwort ändern' %}</a>
+
+    {% endif %}       
     {% if user.is_active and user.is_superuser %}
         <span>|</span>
         <a href="{% url 'import_dgroups' %}">{% trans 'Import Groups' %}</a>
@@ -77,7 +82,11 @@
         <a href="{% url 'admin:index' %}">{% trans 'Django-Admin' %}</a>
     {% endif %}
     <span>|</span>
-    <a href="{% url 'admin:logout' %}">{% trans 'logout' %}</a>
+    {% if user.is_authenticated  %}
+        <a href="{% url 'admin:logout' %}">{% trans 'logout' %}</a>
+    {% else %}       
+        <a href="{% url 'admin:login' %}">{% trans 'login:Adminbereich' %}</a>
+    {% endif %}       
  
     {% if title %} &rsaquo; {{ title }}{% endif %}
     </div>
