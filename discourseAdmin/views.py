@@ -149,14 +149,13 @@ def activate_user(request, user_id):
     user.save()
     print(user.__dict__)
     
+    # soll auch passieren damit man auch in discourse sieht wer deaktiviert ist
     # TODO: lieber discourse_user (das ist ne id) nehmen? dann aber daten overhead ?
-    # ist dieser Teil wegen sso eventuell jetzt obsolete ? vermutlich.
     client = Utils.getDiscourseClient()
     dUser = client.user(username=user.username)
     print(dUser['id'])
     client.deactivate(dUser['id'])
     client.activate(dUser['id'])
-
     return redirect('user-list')
 
 @login_required
@@ -165,6 +164,12 @@ def deactivate_user(request, user_id):
     user = User.objects.get(id=user_id)
     user.is_active = False
     user.save()
+
+    client = Utils.getDiscourseClient()
+    dUser = client.user(username=user.username)
+    client.deactivate(dUser['id'])
+    return redirect('user-list')
+
     
     return redirect('user-list')
 
@@ -311,8 +316,6 @@ def create_user(request, template='user/create.html'):
 from django.contrib.auth import authenticate
 from pydiscourse import sso
 from django.views.decorators.csrf import csrf_exempt
-
-
 
 @csrf_exempt
 def discourse_sso(request, template='user/login.html'):

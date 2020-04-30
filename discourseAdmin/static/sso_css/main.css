@@ -233,14 +233,14 @@ iframe {
 /*------------------------------------------------------------------
 [ Input ]*/
 
-.wrap-input100 {
+.wrap-input100, .wrap-login100 p {
   width: 100%;
   position: relative;
   border-bottom: 1px solid #e6e6e6;
   padding: 29px 0;
 }
 
-.input100 {
+.input100, .wrap-login100 input {
   font-family: Ubuntu-Regular;
   font-size: 20px;
   color: #555555;
@@ -289,7 +289,7 @@ iframe {
   background: linear-gradient(left, #a445b2, #d41872, #fa4299);
 }
 
-.focus-input100::after {
+.focus-input100 {
   font-family: Linearicons-Free;
   font-size: 18px;
   color: #999999;
