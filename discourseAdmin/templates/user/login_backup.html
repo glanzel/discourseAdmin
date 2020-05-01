@@ -1,0 +1,51 @@
+{% extends "sso_base.html" %}
+{% load i18n static %}
+
+
+{% block content %}
+    <div class="item">
+
+<!--        <h3> Login to Discourse </h3> -->
+            <br />
+        <div class="limiter container-fluid h-100">
+            <div class="container-login100 row align-items-center h-100">
+                <div class="col-lg-3 col-xl-3 col-lg-4 col-md-3 col-sm-1">&nbsp;</div>
+                <div class="wrap-login100 col-xl-3 col-lg-4 col-md-6 col-sm-10">
+                    <span class="login100-form-title p-b-41">
+                        Board Login
+                    </span>
+                        <span class="focus-input100" data-placeholder="&#xe82a;"></span>
+
+                    <div id="add-form-div" class="login100-form" >
+                        <form action="{% url 'discourse_sso' %}?sso={{sso}}&sig={{sig}}" method="POST" id="add-form">
+                                <div id="form-fields" class="wide aligned module">
+                                    {% csrf_token %}
+                                    <div>
+
+                                    {{ form.username }}
+                                    <div style="float:left;margin:15px"><img src='{% static "images/icons/user.svg" %}' ></div>
+
+                                    </div>
+                                    <div>
+                                    {{ form.password }}
+                                    <div style="float:left;margin:15px"><img src='{% static "images/icons/password.svg"%}' ></div>
+                                    </div>
+                                    {{ form.submit }}
+                                    
+                                </div>
+                                <input type="submit" value="Submit" />
+                        </form>
+                        <div><h3><a href="{% url 'create_user' %}"> Noch kein Account? Jetzt ein neues Konto erstellen</a></h3></div>
+                        <br>
+                        
+                    </div>
+                </div>
+            </div>
+
+        </div>
+           
+    </div>
+    <br><br>
+
+
+{% endblock %}

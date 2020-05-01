@@ -37,8 +37,6 @@ body, html {
 /*---------------------------------------------*/
 a {
 	font-family: Ubuntu-Regular;
-	font-size: 14px;
-	line-height: 1.7;
 	color: #666666;
 	margin: 0px;
 	transition: all 0.4s;
@@ -240,7 +238,12 @@ iframe {
   padding: 29px 0;
 }
 
-.input100, .wrap-login100 input {
+.wrap-login100 #form-fields input {
+	float:right;
+	width: 80%
+}
+
+.wrap-login100 input {
   font-family: Ubuntu-Regular;
   font-size: 20px;
   color: #555555;
