@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Interventionistische Linke</title>
+    <title>SSO für Discourse</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
@@ -19,6 +19,13 @@
     <link rel="stylesheet" type="text/css" href='{% static "sso_css/main.css" %}'>
 </head>
 <body>
+    {% if messages %}
+      <ul style="background:white; margin-top:30px; padding:10px; font-size:110%" class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
     <div id="background">
         <video autoplay muted loop id="bgVideo">
             <source src="images/loginBackground3.webm" type="video/webm">

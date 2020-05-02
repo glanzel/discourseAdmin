@@ -1,9 +1,8 @@
 import pdb, json
-import logging
+import logging #benutzen wir das ?
 import datetime
-from django.shortcuts import render
 #from django.forms.models import model_to_dict
-from django.core import serializers
+from django.core import serializers #benutzen wir das ?
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -11,13 +10,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.middleware.csrf import get_token
-from django3scaffold.http import JsonResponse
+from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
 from discourseAdmin.models import Participant, User
 from discourseAdmin.forms import UserForm, LoginForm
 from discourseAdmin.logic import Utils
-from doctest import DebugRunner
+from doctest import DebugRunner #wird das benutzt ?
 from django.conf import settings
-from pip._vendor.colorama.ansi import Fore
+from django.contrib import messages
+from pip._vendor.colorama.ansi import Fore # was macht das ?
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
@@ -282,9 +282,9 @@ from pydiscourse import DiscourseClient
 def create_user(request, template='user/create.html'):
     client = Utils.getDiscourseClient()
     d = {}
-    d['form'] = UserForm()
+    d['form'] = LoginForm()
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = LoginForm(request.POST)
         if form.is_valid():
             item = form.save()
             item.set_password(item.password)
@@ -305,7 +305,8 @@ def create_user(request, template='user/create.html'):
             print("******************* form dict *****************")
             print(form.__dict__)
             print("-----")
-            return redirect('http://localhost:3000' + url)
+            messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
+            #return redirect('http://localhost:3000')
         else:
             d['form'] = form
             return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
@@ -321,14 +322,24 @@ from django.views.decorators.csrf import csrf_exempt
 def discourse_sso(request, template='user/login.html'):
     print("discourse_sso")
     #print(request.method)
-    print(request)
+    print(request.GET.get('sso'))
+
+    try:
+        request.GET.get('sso')
+    except:
+        return redirect(settings.DISCOURSE_BASE_URL)
     
     d = {}
+    #sso und sig per get oder post auslesen
     d["sso"] = payload = request.GET.get('sso')
-    if d["sso"] == None : d["sso"] = payload = request.POST['sso']
-    print(d["sso"])
+    #if d["sso"] == None : d["sso"] = payload = request.POST['sso']
     d["sig"] = signature = request.GET.get('sig')
-    if d["sig"] == None : d["sig"] = signature = request.POST['sig']
+    #if d["sig"] == None : d["sig"] = signature = request.POST['sig']
+ 
+    #wenn kein sso vorhanden zurück zur sso clienet leiten
+    print(d)
+    if d["sso"] == None :
+        return redirect(settings.DISCOURSE_BASE_URL)
     
     d['form'] = LoginForm()
     if request.method == 'POST':
