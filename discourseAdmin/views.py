@@ -249,22 +249,23 @@ def import_users(request):
         #print(userObj.__dict__)
         #print(created)
         
-        if created: 
-            userDetails = client.user_all(user_id=userDict['id'])
-            ssoDetails = userDetails['single_sign_on_record']         
-            if ssoDetails != None :
-                print(ssoDetails['external_email'])
-                userObj.email = ssoDetails['external_email']
+        #if created: 
+        # wenn der benutzer per login erzeugt wurde muss er hier aktualisiert werden
+        userDetails = client.user_all(user_id=userDict['id'])
+        ssoDetails = userDetails['single_sign_on_record']         
+        if ssoDetails != None :
+            print(ssoDetails['external_email'])
+            userObj.email = ssoDetails['external_email']
 
-            for key in userDict:
-                if key != "id":
-                    setattr(userObj, key, userDict[key])
+        for key in userDict:
+            if key != "id":
+                setattr(userObj, key, userDict[key])
 
-            userObj.save();
+        userObj.save();
 
-        else :
+        #else :
             #TODO overwrite Userdata in Discourse
-            print("TODO")
+            #print("TODO")
         
         try:
             p = userObj.participant
@@ -374,7 +375,8 @@ def discourse_sso(request, template='user/login.html'):
         # checken ob stattdessen ein Php Benutzer besteht
         if user is None:
             if Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']):
-                user = User.objects.filter(username=request.POST['username']).get()
+                #user = User.objects.filter(username=request.POST['username']).get()
+                user = User.objects.get_or_create(username=request.POST['username']);
                 user.set_password(request.POST['password'])
                 user.save()
 
