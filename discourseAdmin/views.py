@@ -22,6 +22,8 @@ from pip._vendor.colorama.ansi import Fore # was macht das ?
 #from __builtin__ import True # und was soll das  ?
 
 
+sso_links = {'discourse_sso':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
+
 @login_required
 def user_list(request, template='user/list.html'):
     d = {}
@@ -277,11 +279,31 @@ def import_users(request):
         print("-");
     return JsonResponse()
     #return JsonResponse(usersDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
+
+def change_password(request, template='user/change_password.html'):
+    d = {}
+    d['form'] = LoginForm()
+    d['sso_links'] = sso_links
+    d['ignore_sso_link'] = 'change_password' 
+    if request.method == 'POST':
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        if user is not None:
+            if request.POST['new_password'] == request.POST['repeat_new_password']:
+                user = User.objects.get(username=request.POST['username'])
+                user.set_password(request.POST['new_password'])
+                user.save()
+                print(user)
+                messages.success(request, 'Password wurde erfolgreich geändert ')
+            else:
+                print(form);
+    return render(request, template, d)
+
     
 from pydiscourse import DiscourseClient
 def create_user(request, template='user/create.html'):
     client = Utils.getDiscourseClient()
     d = {}
+    d['sso_links'] = sso_links
     d['form'] = LoginForm()
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -330,6 +352,9 @@ def discourse_sso(request, template='user/login.html'):
         return redirect(settings.DISCOURSE_BASE_URL)
     
     d = {}
+    d['sso_links'] = sso_links
+    d['ignore_sso_link'] = 'discourse_sso' 
+    
     #sso und sig per get oder post auslesen
     d["sso"] = payload = request.GET.get('sso')
     #if d["sso"] == None : d["sso"] = payload = request.POST['sso']

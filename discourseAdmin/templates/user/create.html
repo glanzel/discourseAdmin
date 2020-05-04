@@ -26,23 +26,8 @@
                 Register
             </button>
         </div>
-
-        <div class="container-login100-form-btn m-t-32">
-            <a href="{% url 'discourse_sso' %}">
-                Login
-            </a>
-        </div>
-
-        <div class="container-login100-form-btn m-t-32">
-            <a href="#">
-                Passwort ändern
-            </a>
-        </div>
-        <div class="container-login100-form-btn m-t-32">
-            <a href="{% url 'user-list' %}">
-                Login:Adminbereich
-            </a>
-        </div>
+        
+        {% include "user/sso_links.html" with ignore_sso_link="create_user" %}
 
     </form>
 
