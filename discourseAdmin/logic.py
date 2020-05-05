@@ -4,7 +4,7 @@ import requests
 from django.conf import settings
 from pydiscourse import DiscourseClient
 from requests.auth import HTTPBasicAuth
-from discourseAdmin.models import User_Groups
+from discourseAdmin.models import User_Groups, Participant, User
 
 from dsso.settings_local import PHP_LOGIN_CHECK_URI, PHP_LOGIN_CHECK_AUTH
 
@@ -32,11 +32,69 @@ class Utils:
             result = requests.post(PHP_LOGIN_CHECK_URI, data=post_data, auth=basic_auth)
             return result.status_code >= 200 and result.status_code < 300
         else:
-            print(username)
+            print("Try to login "+username+" by debug password")
             if password == "1wgtbgeheimnis" :
                 return True
             else:
                 return False
+
+    @staticmethod
+    def migrateUser(username,password):
+        print("Utils.migrateUser")
+        client = Utils.getDiscourseClient()
+        #user = User.objects.filter(username=request.POST['username']).get()
+        user,created = User.objects.get_or_create(username=username);
+        user.set_password(password)
+        if created :
+            # TODO: gucken ob der Benutzer bereits in discourse besteht.            
+            try: dUser = client.user(username)
+            except: #der benutzer muss komplett erzeugt werden
+                Utils.create_discourse_user(user, True)
+            else: #den benutzer muss importiert werden
+                Utils.import_discourse_user(dUser, user)
+        return user
+              
+
+    @staticmethod
+    def create_discourse_user(user, active=False): #python user sollte dann auch gerade erst erzeugt worden sein
+        print("Utils.create_discourse_user")
+        client = Utils.getDiscourseClient()
+        if active != True : user.is_active = False
+        #email für python nutzer anlegen
+        if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
+            user.email = '%s%s@%s' % ("da", user.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
+        user.save()
+              
+        #der benutzer wird in discourse erzeugt. 
+        dUser = client.create_user(user.username, user.username, user.email, user.password)
+        if active : client.activate(dUser['user_id'])
+          
+        #die verbindung zu discourse wird angelegt                    
+        p = Participant(user = user, discourse_user=dUser['user_id'])
+        p.save();
+
+    @staticmethod
+    def import_discourse_user(dUser, user) :
+        print("Utils.import_discourse_user")
+        client = Utils.getDiscourseClient()
+        userDetails = client.user_all(user_id=dUser['id'])
+        ssoDetails = userDetails['single_sign_on_record']         
+        if ssoDetails != None :
+            print(ssoDetails['external_email'])
+            user.email = ssoDetails['external_email']
+
+        for key in dUser:
+            if key != "id":
+                try: setattr(user, key, dUser[key])
+                except: print(getattr(user,key))
+
+        user.save();
+        try:
+            p = user.participant
+        except:
+            p = Participant(user = user)
+        p.discourse_user=dUser['id']
+        p.save();
 
     # aus php importiert
     @classmethod

@@ -153,11 +153,13 @@ def activate_user(request, user_id):
     
     # soll auch passieren damit man auch in discourse sieht wer deaktiviert ist
     # TODO: lieber discourse_user (das ist ne id) nehmen? dann aber daten overhead ?
-    client = Utils.getDiscourseClient()
-    dUser = client.user(username=user.username)
-    print(dUser['id'])
-    client.deactivate(dUser['id'])
-    client.activate(dUser['id'])
+    try:
+        client = Utils.getDiscourseClient()
+        dUser = client.user(username=user.username)
+        print(dUser['id'])
+        #client.deactivate(dUser['id'])
+        client.activate(dUser['id'])
+    except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
     return redirect('user-list')
 
 @login_required
@@ -167,12 +169,11 @@ def deactivate_user(request, user_id):
     user.is_active = False
     user.save()
 
-    client = Utils.getDiscourseClient()
-    dUser = client.user(username=user.username)
-    client.deactivate(dUser['id'])
-    return redirect('user-list')
-
-    
+    try:
+        client = Utils.getDiscourseClient()
+        dUser = client.user(username=user.username)
+        client.deactivate(dUser['id'])
+    except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
     return redirect('user-list')
 
 
@@ -311,23 +312,21 @@ def create_user(request, template='user/create.html'):
         if form.is_valid():
             item = form.save()
             item.set_password(item.password)
-            item.is_active = False
-            if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
-                item.email = '%s%s@%s' % ("da", item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
-                print(item.email)
-            item.save()
+            Utils.create_discourse_user(item)
             
-            #der benutzer wird in discourse schon erzeugt damit gruppen etc, bereits gesetzt werden können. external_id kann aber erst beim sso login gesetzt werden    
-            dUser = client.create_user(item.username, item.username, item.email, item.password, active='true')
-            client.deactivate(dUser['user_id']), 
-            p = Participant(user = item, discourse_user=dUser['user_id'])
-            p.save()
+#             item.is_active = False
+# 
+#             if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
+#                 item.email = '%s%s@%s' % ("da", item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
+#                 print(item.email)
+#             item.save()
+#             
+#             #der benutzer wird in discourse schon erzeugt damit gruppen etc, bereits gesetzt werden können. external_id kann aber erst beim sso login gesetzt werden    
+#             dUser = client.create_user(item.username, item.username, item.email, item.password)
+#             client.deactivate(dUser['user_id']), 
+#             p = Participant(user = item, discourse_user=dUser['user_id'])
+#             p.save()
             
-            print("******************* item dict *****************")
-            print(item.__dict__)
-            print("******************* form dict *****************")
-            print(form.__dict__)
-            print("-----")
             messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
             #return redirect('http://localhost:3000')
         else:
@@ -344,17 +343,9 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def discourse_sso(request, template='user/login.html'):
     print("discourse_sso")
-    #print(request.method)
-    print(request.GET.get('sso'))
 
-    try:
-        request.GET.get('sso')
-    except:
-        return redirect(settings.DISCOURSE_BASE_URL)
-    
     d = {}
     d['sso_links'] = sso_links
-    d['ignore_sso_link'] = 'discourse_sso' 
     
     #sso und sig per get oder post auslesen
     d["sso"] = payload = request.GET.get('sso')
@@ -362,8 +353,7 @@ def discourse_sso(request, template='user/login.html'):
     d["sig"] = signature = request.GET.get('sig')
     #if d["sig"] == None : d["sig"] = signature = request.POST['sig']
  
-    #wenn kein sso vorhanden zurück zur sso clienet leiten
-    print(d)
+    #wenn kein sso vorhanden zurück zum sso client leiten
     if d["sso"] == None :
         return redirect(settings.DISCOURSE_BASE_URL)
     
@@ -374,26 +364,21 @@ def discourse_sso(request, template='user/login.html'):
  
         # checken ob stattdessen ein Php Benutzer besteht
         if user is None:
+            print("User is not authenticated by python try php")
             if Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']):
-                #user = User.objects.filter(username=request.POST['username']).get()
-                user = User.objects.get_or_create(username=request.POST['username']);
-                user.set_password(request.POST['password'])
-                user.save()
-
-        print(user)
-        
+                user = Utils.migrateUser(username=request.POST['username'], password=request.POST['password'])
         
         # wenn Benutzer valide sso validierung mit gruppen ausliefern  
         if user is not None:
             Utils.watchImportantTopic(request, user.username)
-            nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
             #print(user.__dict__)
-            groups = user.dgroup_set.all()
-            groupstr = ', '.join(map(str, list(groups)))
+            #groups = user.dgroup_set.all()
+            #groupstr = ', '.join(map(str, list(groups)))
 #             if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
 #                  user.email = '%s@%s' % (user.id, settings.DISCOURSE_INTERN_SSO_EMAIL) 
             print(user.__dict__)
-            url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, user.email, user.participant.id, user.username, add_groups=groupstr, groups=groupstr)
+            nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
+            url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, user.email, user.participant.id, user.username) #, add_groups=groupstr, groups=groupstr)
             return redirect(settings.DISCOURSE_BASE_URL + url)
         else:
             return redirect(settings.DISCOURSE_BASE_URL + "/login/?alert=zugangsdaten sind falsch")
