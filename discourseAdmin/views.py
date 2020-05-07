@@ -399,6 +399,7 @@ def testpd(request):
 
 @csrf_exempt
 def testisvaliduser(request, template='user/tivu.html'):
+    print("testisvaliduser")
     d =  {}
     d['form'] = LoginForm()
     if request.method == 'POST':
