@@ -250,21 +250,21 @@ def import_users(request):
         #print(userObj.__dict__)
         #print(created)
         
-        #if created: 
+        if created: 
         # wenn der benutzer per login erzeugt wurde muss er hier aktualisiert werden
-        userDetails = client.user_all(user_id=userDict['id'])
-        ssoDetails = userDetails['single_sign_on_record']         
-        if ssoDetails != None :
-            print(ssoDetails['external_email'])
-            userObj.email = ssoDetails['external_email']
+            userDetails = client.user_all(user_id=userDict['id'])
+            ssoDetails = userDetails['single_sign_on_record']         
+            if ssoDetails != None :
+                print(ssoDetails['external_email'])
+                userObj.email = ssoDetails['external_email']
+    
+            for key in userDict:
+                if key != "id":
+                    setattr(userObj, key, userDict[key])
+    
+            userObj.save();
 
-        for key in userDict:
-            if key != "id":
-                setattr(userObj, key, userDict[key])
-
-        userObj.save();
-
-        #else :
+        else : None
             #TODO overwrite Userdata in Discourse
             #print("TODO")
         
@@ -396,3 +396,14 @@ def testpd(request):
     print(request.method)
     print(request)
     return JsonResponse()
+
+@csrf_exempt
+def testisvaliduser(request, template='user/tivu.html'):
+    d =  {}
+    d['form'] = LoginForm()
+    if request.method == 'POST':
+        print(request.POST['username'])
+        print("with password is a validPhpUser :")
+        print(Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']))
+        print("_______")
+    return render(request, template, d)

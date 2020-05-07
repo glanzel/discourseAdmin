@@ -1,0 +1,32 @@
+{% extends "sso_form_wrapper.html" %}
+{% load i18n static %}
+
+
+{% block form %}
+
+    <span class="login100-form-title p-b-41">
+        Test IS Valid User
+    </span>
+    <form action="{% url 'testisvaliduser' %}" method="POST" id="add-form" class="login100-form validate-form p-b-33 p-t-5">                     <div id="feedback"></div>
+
+        <div class="wrap-input100 validate-input" data-validate = "Enter username">
+            {{ form.username }}
+            <span class="focus-input100" data-placeholder="&#xe82a;"><img src='{% static "images/icons/user.svg" %}' ></span>
+        </div>
+
+        <div class="wrap-input100 validate-input" data-validate="Enter password">
+            {{ form.password }}
+            <span class="focus-input100" data-placeholder="&#xe80f;"><img src='{% static "images/icons/password.svg"%}' ></span>
+        </div>
+
+        <div class="container-login100-form-btn m-t-32">
+            <button id="input_button_login" type="submit" class="login100-form-btn active_input_button" >
+                Login
+            </button>
+        </div>
+
+        {% include "user/sso_links.html" with ignore_sso_link="discourse_sso" %}
+
+    </form>
+
+{% endblock %}
