@@ -95,6 +95,7 @@ class Utils:
             p = Participant(user = user)
         p.discourse_user=dUser['id']
         p.save();
+        return user;
 
     # aus php importiert
     @classmethod

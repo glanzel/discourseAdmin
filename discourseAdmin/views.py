@@ -210,28 +210,39 @@ def import_dgroups(request):
     client = Utils.getDiscourseClient()
     groupsDict = client.groups()
     for groupDict in groupsDict:
+        # gruppe in da erzeugen falls noch nicht vorhanden
         groupObj, created = dGroup.objects.get_or_create(discourse_group_id=groupDict['id'])
         print("import: "+str(groupDict['id'])+" : "+groupDict['name'])
-
-        for key in groupDict:
-            if key != "id":
-                setattr(groupObj, key, groupDict[key])
-
         if created: 
             print("created")
+            for key in groupDict:
+                if key != "id":
+                    setattr(groupObj, key, groupDict[key])
             groupObj.create_date = datetime.datetime.now()
         else: 
             print("already exists") #TODO: Discourse group aktualisieren ?      
             groupObj.update_date = datetime.datetime.now()
-        
         groupObj.discourse_group_id = groupDict['id']         
         groupObj.save();
 
-        print("-");
+        print("member auslesen");
         groupDetails = client.group(groupDict['name'])
         #print(groupDetails)
         for member in groupDetails['members']:
-            p = Participant.objects.get(discourse_user=member['id'])
+            #print(member)
+            # nutzer in da erstellen falls noch nicht vorhanden
+            user, u_created = User.objects.get_or_create(username=member['username'])
+            if u_created :
+                user = Utils.import_discourse_user(member,user)
+
+            #print(user.__dict__)
+
+            # nutzer in da zu gruppe hinzufügen
+            try: p = user.participant
+            except: p = Participant(user = user)
+            p.discourse_user=member['id']
+            p.save();
+
             ug, create = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
             if created:
                 ug.save()    
