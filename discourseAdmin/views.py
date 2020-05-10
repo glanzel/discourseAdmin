@@ -220,7 +220,7 @@ def import_dgroups(request):
             groupObj.create_date = datetime.datetime.now()
         else: 
             print("already exists") #TODO: Discourse group aktualisieren ?      
-            groupObj.update_date = datetime.datetime.now()
+            #groupObj.update_date = datetime.datetime.now()
         groupObj.discourse_group_id = groupDict['id']         
         groupObj.save();
 
@@ -242,12 +242,12 @@ def import_dgroups(request):
             p.discourse_user=member['id']
             p.save();
 
-            try: ug, create = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
+            try: ug, ug_created = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
             except : 
                 print(" Usergroup exist twice ")
                 print(p.user_id)
                 print(groupObj.id)
-            if created:
+            if ug_created:
                 ug.save()    
     
     return JsonResponse()

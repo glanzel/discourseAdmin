@@ -73,4 +73,5 @@ class User_Groups(models.Model):
 
     class Meta:
         ordering = ['-id']
+        unique_together = ('user', 'group',)
  
