@@ -243,7 +243,7 @@ def import_dgroups(request):
             p.save();
 
             try: ug, create = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
-            except MultipleObjectsReturned : print(" Usergroup exist double "+p.user_id+"    "+groupObj.id)
+            except : print(" Usergroup exist double "+p.user_id+"    "+groupObj.id)
             if created:
                 ug.save()    
     
