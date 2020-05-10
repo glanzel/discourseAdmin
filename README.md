@@ -1,7 +1,7 @@
 # discourseAdmin
 a more fine grained way of administrate discourse (uses sso)
 
-install
+A. install
 
 0. sudo apt-get install libmysqlclient-dev (optional)
 1. clone the git:  
@@ -10,7 +10,7 @@ install
 4. create the database
 4. populate the database: python3 manage.py migrate
 
-start
+B. start
 
 python3 manage.py runserver 0.0.0.0:4911
 -> should start on localhost:4911 
