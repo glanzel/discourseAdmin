@@ -21,7 +21,6 @@ from pip._vendor.colorama.ansi import Fore # was macht das ?
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
-
 sso_links = {'discourse_sso':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
 
 @login_required
@@ -243,7 +242,8 @@ def import_dgroups(request):
             p.discourse_user=member['id']
             p.save();
 
-            ug, create = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
+            try: ug, create = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
+            except MultipleObjectsReturned : print(" Usergroup exist double "+p.user_id+"    "+groupObj.id)
             if created:
                 ug.save()    
     
