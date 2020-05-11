@@ -101,9 +101,9 @@ class Utils:
     def import_dgroup_members(groupname, da_group_id):
         print("member auslesen");
         client = Utils.getDiscourseClient()
-        groupDetails = client.group(groupname, limit=1000)
+        members = client.group_members(groupname, limit=1000)
         #print(groupDetails)
-        for member in groupDetails['members']:
+        for member in members:
             print(member['username'])
             # nutzer in da erstellen falls noch nicht vorhanden
             user, u_created = User.objects.get_or_create(username=member['username'])
