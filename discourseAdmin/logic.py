@@ -101,7 +101,7 @@ class Utils:
     def import_dgroup_members(groupname, da_group_id):
         print("member auslesen");
         client = Utils.getDiscourseClient()
-        groupDetails = client.group(groupname, limit=2000)
+        groupDetails = client.group(groupname, limit=1000)
         #print(groupDetails)
         for member in groupDetails['members']:
             print(member['username'])
