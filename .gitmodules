@@ -1,0 +1,3 @@
+[submodule "pydiscourse"]
+	path = pydiscourse
+	url = https://glanzel@github.com/glanzel/pydiscourse.git

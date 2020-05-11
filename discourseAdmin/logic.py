@@ -2,7 +2,7 @@ from sys import argv
 
 import requests
 from django.conf import settings
-from pydiscourse import DiscourseClient
+from mypydiscourse.pydiscourse import DiscourseClient
 from requests.auth import HTTPBasicAuth
 from discourseAdmin.models import User_Groups, Participant, User
 
@@ -101,7 +101,7 @@ class Utils:
     def import_dgroup_members(groupname, da_group_id):
         print("member auslesen");
         client = Utils.getDiscourseClient()
-        groupDetails = client.group(groupname)
+        groupDetails = client.group(groupname, limit=100)
         #print(groupDetails)
         for member in groupDetails['members']:
             print(member['username'])
