@@ -97,6 +97,36 @@ class Utils:
         p.save();
         return user;
 
+    @staticmethod
+    def import_dgroup_members(groupname, da_group_id):
+        print("member auslesen");
+        client = Utils.getDiscourseClient()
+        groupDetails = client.group(groupname)
+        #print(groupDetails)
+        for member in groupDetails['members']:
+            print(member['username'])
+            # nutzer in da erstellen falls noch nicht vorhanden
+            user, u_created = User.objects.get_or_create(username=member['username'])
+            if u_created :
+                user = Utils.import_discourse_user(member,user)
+
+            #print(user.__dict__)
+
+            # nutzer in da zu gruppe hinzufügen
+            try: p = user.participant
+            except: p = Participant(user = user)
+            p.discourse_user=member['id']
+            p.save();
+
+            try: ug, ug_created = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = da_group_id)
+            except : 
+                print( f'Benutzer {p.user_id} scheint doppelt in Gruppe {da_group_id} vorzukommen' )
+            if ug_created:
+                print(f'Fuege Benutzer {p.user_id} zur Gruppe hinzu')
+                ug.save()    
+
+        
+    
     # aus php importiert
     @classmethod
     def watchImportantTopic(cls, request, accountname ) :

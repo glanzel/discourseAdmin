@@ -223,36 +223,12 @@ def import_dgroups(request):
             #groupObj.update_date = datetime.datetime.now()
         groupObj.discourse_group_id = groupDict['id']         
         groupObj.save();
+        Utils.import_dgroup_members(groupDict['name'], groupObj.id)
 
-        print("member auslesen");
-        groupDetails = client.group(groupDict['name'])
-        #print(groupDetails)
-        for member in groupDetails['members']:
-            #print(member)
-            # nutzer in da erstellen falls noch nicht vorhanden
-            user, u_created = User.objects.get_or_create(username=member['username'])
-            if u_created :
-                user = Utils.import_discourse_user(member,user)
-
-            #print(user.__dict__)
-
-            # nutzer in da zu gruppe hinzufügen
-            try: p = user.participant
-            except: p = Participant(user = user)
-            p.discourse_user=member['id']
-            p.save();
-
-            try: ug, ug_created = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
-            except : 
-                print( f'Benutzer {p.user_id} scheint doppelt in Gruppe {groupObj.id} vorzukommen' )
-                print(p.user_id)
-                print(groupObj.id)
-            if ug_created:
-                print(f'Fuege Benutzer {p.user_id} zur Gruppe hinzu')
-                ug.save()    
-    
     return JsonResponse()
     #return JsonResponse(groupsDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
+
+
 
 from pydiscourse import DiscourseClient
 @login_required    
