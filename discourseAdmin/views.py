@@ -244,7 +244,7 @@ def import_dgroups(request):
 
             try: ug, ug_created = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = groupObj.id)
             except : 
-                print( f 'Benutzer {p.user_id} scheint doppelt in Gruppe {groupObj.id} vorzukommen' )
+                print( f'Benutzer {p.user_id} scheint doppelt in Gruppe {groupObj.id} vorzukommen' )
                 print(p.user_id)
                 print(groupObj.id)
             if ug_created:
