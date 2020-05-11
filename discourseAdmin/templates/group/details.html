@@ -6,6 +6,7 @@
 {% block content %}
     <div class="item">
         <h1>group - {{ group }} </h1><br />
+        <a href={% url 'import_dgroup' group.name group.id %}>import members</a>
         <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
             <tr style="background-color: #DDD">
                 <th style="padding: 10px;">ID</th>

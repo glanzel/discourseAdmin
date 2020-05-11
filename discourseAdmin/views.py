@@ -226,7 +226,11 @@ def import_dgroups(request):
         Utils.import_dgroup_members(groupDict['name'], groupObj.id)
 
     return JsonResponse()
-    #return JsonResponse(groupsDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
+
+def import_dgroup(request, groupname, da_group_id):
+    client = Utils.getDiscourseClient()
+    Utils.import_dgroup_members(groupname, da_group_id)
+    return JsonResponse()
 
 
 

@@ -20,6 +20,7 @@ urlpatterns = (
 
     path('import_groups', views.import_dgroups, name='import_dgroups'),
     path('import_users', views.import_users, name='import_users'),
+    path('import_dgroup/<str:groupname>/<int:da_group_id>', views.import_dgroup, name='import_dgroup'),
     
     path('user/<int:user_id>/activate', views.activate_user, name='activate_user'),
     path('user/<int:user_id>/deactivate', views.deactivate_user, name='deactivate_user'),
