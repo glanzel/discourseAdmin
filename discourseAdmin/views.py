@@ -18,6 +18,8 @@ from doctest import DebugRunner #wird das benutzt ?
 from django.conf import settings
 from django.contrib import messages
 from pip._vendor.colorama.ansi import Fore # was macht das ?
+from gydiscourse.pydiscourse.client import DiscourseClient
+
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
@@ -201,7 +203,6 @@ def user_groups_delete(request, id):
     item.delete()
     return JsonResponse()
 
-from pydiscourse import DiscourseClient
 from django.core.serializers.json import DjangoJSONEncoder
 @login_required
 #import_dgroups aktualisiert von discourse -> discourseAdmin (bitte vorsichtig verwenden)    
@@ -234,7 +235,6 @@ def import_dgroup(request, groupname, da_group_id):
 
 
 
-from pydiscourse import DiscourseClient
 @login_required    
 def import_users(request):
     client = Utils.getDiscourseClient()
@@ -296,7 +296,6 @@ def change_password(request, template='user/change_password.html'):
     return render(request, template, d)
 
     
-from pydiscourse import DiscourseClient
 def create_user(request, template='user/create.html'):
     client = Utils.getDiscourseClient()
     d = {}
@@ -332,7 +331,7 @@ def create_user(request, template='user/create.html'):
     #return JsonResponse()
 
 from django.contrib.auth import authenticate
-from pydiscourse import sso
+from gydiscourse.pydiscourse import sso
 from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt

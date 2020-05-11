@@ -1,3 +1,6 @@
 [submodule "pydiscourse"]
 	path = pydiscourse
 	url = https://glanzel@github.com/glanzel/pydiscourse.git
+[submodule "gydiscourse"]
+	path = gydiscourse
+	url = https://glanzel@github.com/glanzel/pydiscourse.git
