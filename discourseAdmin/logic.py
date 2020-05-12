@@ -98,10 +98,10 @@ class Utils:
         return user;
 
     @staticmethod
-    def import_dgroup_members(groupname, da_group_id):
+    def import_dgroup_members(groupname, da_group_id, limit=1000, offset=0):
         print("member auslesen");
         client = Utils.getDiscourseClient()
-        members = client.group_members(groupname, limit=1000)
+        members = client.group_members(groupname, limit=limit, offset=offset)
         #print(groupDetails)
         for member in members:
             print(member['username'])

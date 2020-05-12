@@ -229,8 +229,10 @@ def import_dgroups(request):
     return JsonResponse()
 
 def import_dgroup(request, groupname, da_group_id):
+    limit = request.GET.get("limit") if request.GET.get("limit") else 1000
+    offset = request.GET.get("offset") if request.GET.get("offset") else 0
     client = Utils.getDiscourseClient()
-    Utils.import_dgroup_members(groupname, da_group_id)
+    Utils.import_dgroup_members(groupname, da_group_id, limit, offset)
     return JsonResponse()
 
 
