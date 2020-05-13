@@ -160,6 +160,7 @@ def activate_user(request, user_id):
         print(dUser['id'])
         #client.deactivate(dUser['id'])
         client.activate(dUser['id'])
+        client.unsuspend(dUser['id'])
     except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
     return redirect('user-list')
 
@@ -174,6 +175,7 @@ def deactivate_user(request, user_id):
         client = Utils.getDiscourseClient()
         dUser = client.user(username=user.username)
         client.deactivate(dUser['id'])
+        client.suspend(dUser['id'],99999,"Gesperrt von user "+request.user.username)
     except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
     return redirect('user-list')
 
@@ -244,8 +246,12 @@ def import_users(request):
     for userDict in usersDict:
         userObj, created = User.objects.get_or_create(username=userDict['username'])
 
-        #print(userObj.__dict__)
+        print(userDict)
         #print(created)
+        
+        if 'suspended_at' in userDict : 
+            userObj.is_active = False;
+            userObj.save();
         
         if created: 
         # wenn der benutzer per login erzeugt wurde muss er hier aktualisiert werden

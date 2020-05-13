@@ -88,6 +88,9 @@ class Utils:
                 try: setattr(user, key, dUser[key])
                 except: print(getattr(user,key))
 
+        if 'suspended_at' in dUser : 
+            user.is_active = False;
+
         user.save();
         try:
             p = user.participant
@@ -109,6 +112,11 @@ class Utils:
             user, u_created = User.objects.get_or_create(username=member['username'])
             if u_created :
                 user = Utils.import_discourse_user(member,user)
+            else : 
+                if 'suspended_at' in member : 
+                    user.is_active = False;
+                    user.save();
+
 
             #print(user.__dict__)
 
