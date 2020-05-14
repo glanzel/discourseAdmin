@@ -128,12 +128,25 @@ class Utils:
 
             try: ug, ug_created = User_Groups.objects.get_or_create(user_id=p.user_id, group_id = da_group_id)
             except : 
-                print( f'Benutzer {p.user_id} scheint doppelt in Gruppe {da_group_id} vorzukommen' )
-            if ug_created:
-                print(f'Fuege Benutzer {p.user_id} zur Gruppe hinzu')
-                ug.save()    
+                print( f'Benutzer {p.user_id} scheint doppelt in Gruppe {da_group_id} vorzukommen versuche zu reparieren')
+                Utils.delete_double_ug(user_id=p.user_id, group_id = da_group_id)
+            else:    
+                if ug_created:
+                    print(f'Fuege Benutzer {p.user_id} zur Gruppe hinzu')
+                    ug.save()    
 
-        
+    @staticmethod
+    def delete_double_ug(user_id, group_id):
+        ugs = User_Groups.objects.filter(user_id=user_id, group_id = group_id)
+        print(ugs)
+        no = 0
+        for ug in ugs :
+            if no == 0 : print("keep first occurance")
+            else : 
+                print("delete other occurance")
+                ug.delete()
+            no = no+1
+            
     
     # aus php importiert
     @classmethod
