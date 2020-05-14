@@ -158,10 +158,12 @@ def activate_user(request, user_id):
         client = Utils.getDiscourseClient()
         dUser = client.user(username=user.username)
         print(dUser['id'])
-        #client.deactivate(dUser['id'])
-        client.activate(dUser['id'])
-        client.unsuspend(dUser['id'])
     except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
+    try: client.activate(dUser['id'])
+    except: print("scheinbar bereits aktiviert")
+    try: client.unsuspend(dUser['id'])
+    except: print("scheinbar nicht gesperrt")
+
     return redirect('user-list')
 
 @login_required
@@ -177,6 +179,11 @@ def deactivate_user(request, user_id):
         client.deactivate(dUser['id'])
         client.suspend(dUser['id'],365000,"Gesperrt von user "+request.user.username)
     except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
+    try: client.deactivate(dUser['id'])
+    except: print("scheinbar nicht aktiviert")
+    try:         client.suspend(dUser['id'],365000,"Gesperrt von user "+request.user.username)
+    except: print("scheinbar bereits gesperrt")
+
     return redirect('user-list')
 
 
