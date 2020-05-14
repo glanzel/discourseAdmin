@@ -88,7 +88,7 @@ class Utils:
                 try: setattr(user, key, dUser[key])
                 except: print(getattr(user,key))
 
-        if 'suspended_at' in dUser : 
+        if 'suspended_at' in userDetails : 
             user.is_active = False;
 
         user.save();
@@ -105,18 +105,14 @@ class Utils:
         print("member auslesen");
         client = Utils.getDiscourseClient()
         members = client.group_members(groupname, limit=limit, offset=offset)
-        #print(groupDetails)
+
         for member in members:
             print(member['username'])
+
             # nutzer in da erstellen falls noch nicht vorhanden
             user, u_created = User.objects.get_or_create(username=member['username'])
-            if u_created :
-                user = Utils.import_discourse_user(member,user)
-            else : 
-                if 'suspended_at' in member : 
-                    user.is_active = False;
-                    user.save();
-
+            #if u_created :
+            user = Utils.import_discourse_user(member,user)
 
             #print(user.__dict__)
 
