@@ -29,7 +29,7 @@ class Utils:
                 basic_auth = HTTPBasicAuth(PHP_LOGIN_CHECK_AUTH['username'], PHP_LOGIN_CHECK_AUTH['password'])
             else:
                 basic_auth = None
-            result = requests.post(PHP_LOGIN_CHECK_URI, data=post_data, auth=basic_auth)
+            result = requests.post(PHP_LOGIN_CHECK_URI, data=post_data, auth=basic_auth, verify=False)
             return result.status_code >= 200 and result.status_code < 300
         else:
             print("Try to login "+username+" by debug password")
@@ -111,8 +111,8 @@ class Utils:
 
             # nutzer in da erstellen falls noch nicht vorhanden
             user, u_created = User.objects.get_or_create(username=member['username'])
-            #if u_created :
-            user = Utils.import_discourse_user(member,user)
+            if u_created :
+                user = Utils.import_discourse_user(member,user)
 
             #print(user.__dict__)
 
