@@ -9,8 +9,6 @@ https://docs.djangoproject.com/en/3.0/howto/deployment/wsgi/
 
 import os, sys
 
-sys.path.append('/var/www/dsso')
-
 from django.core.wsgi import get_wsgi_application
 
 
