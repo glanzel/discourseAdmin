@@ -32,6 +32,8 @@ urlpatterns = (
     path('user/<int:user_id>/delete_from_group/<int:group_id>', views.delete_user_from_group, name='delete_user_from_group'),
 
     path('discourse_sso/', views.discourse_sso, name='discourse_sso'),
+    path('anmeldung/index.html', views.discourse_sso, name='anmeldung'),
+
     path('testpd/', views.testpd, name='testpd'),
 
 )
