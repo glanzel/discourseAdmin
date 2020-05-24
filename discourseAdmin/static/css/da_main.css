@@ -1,0 +1,20 @@
+/* Admin Bereich */
+
+.field-groups{
+    display:none;
+}
+
+.field-user_permissions{
+    display:none;
+}
+.field-last_login{
+    display:none;
+}
+
+.field-username{
+    pointer-events: none;
+}
+.field-email{
+    pointer-events: none;
+}
+
