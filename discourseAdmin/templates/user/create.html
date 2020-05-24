@@ -11,9 +11,11 @@
         
         {% csrf_token %}
 
+
         <div class="wrap-input100 validate-input" data-validate = "Enter username">
             {{ form.username }}
             <span class="focus-input100" data-placeholder="&#xe82a;"><img src='{% static "images/icons/user.svg" %}' ></span>
+            <span class="alert">{{form.errors.username}}</span>
         </div>
 
         <div class="wrap-input100 validate-input" data-validate="Enter password">

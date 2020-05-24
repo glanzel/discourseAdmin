@@ -154,7 +154,7 @@ class Utils:
                 print(ug)
                 if ug is not None:
                     for topic_id in settings.DISCOURSE_FORCE_TOPIC[group_id]:
-                        try: client.watch_topic(topic_id, accountname, notifications=3)
+                        try: client.watch_topic(topic_id, accountname, notification_level=3)
                         except: print("EXCEPTION für "+topic_id)
 
 

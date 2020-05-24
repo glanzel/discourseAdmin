@@ -321,24 +321,13 @@ def create_user(request, template='user/create.html'):
             item.set_password(item.password)
             Utils.create_discourse_user(item)
             
-#             item.is_active = False
-# 
-#             if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
-#                 item.email = '%s%s@%s' % ("da", item.id, settings.DISCOURSE_INTERN_SSO_EMAIL)
-#                 print(item.email)
-#             item.save()
-#             
-#             #der benutzer wird in discourse schon erzeugt damit gruppen etc, bereits gesetzt werden können. external_id kann aber erst beim sso login gesetzt werden    
-#             dUser = client.create_user(item.username, item.username, item.email, item.password)
-#             client.deactivate(dUser['user_id']), 
-#             p = Participant(user = item, discourse_user=dUser['user_id'])
-#             p.save()
-            
             messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
             #return redirect('http://localhost:3000')
         else:
+            messages.error(request, 'Das hat nicht geklappt. Dein Account wurde nicht angelegt.')
             d['form'] = form
-            return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
+            return render(request, template, d)
+            #return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
     d['user_list'] = User.objects.all()
     return render(request, template, d)
     #return JsonResponse()

@@ -472,7 +472,12 @@ iframe {
   position: relative;
 }
 
-.alert-validate::before {
+.errorlist{
+    margin-left:30px;
+    color:red;
+}
+
+.alert-validate::before{
   content: attr(data-validate);
   position: absolute;
   max-width: 70%;
@@ -504,7 +509,7 @@ iframe {
   transition: opacity 0.4s;
 }
 
-.alert-validate::after {
+.alert-validate::after{
   content: "\f12a";
   font-family: FontAwesome;
   font-size: 16px;
