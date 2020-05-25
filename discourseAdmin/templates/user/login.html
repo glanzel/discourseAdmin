@@ -1,13 +1,11 @@
 {% extends "sso_form_wrapper.html" %}
 {% load i18n static %}
-
-
 {% block form %}
 
     <span class="login100-form-title p-b-41">
         Board Login
     </span>
-    <form action="{% url 'discourse_sso' %}?sso={{sso}}&sig={{sig}}" method="POST" id="add-form" class="login100-form validate-form p-b-33 p-t-5">                     <div id="feedback"></div>
+    <form action="{% url 'anmeldung' %}?sso={{sso}}&sig={{sig}}" method="POST" id="add-form" class="login100-form validate-form p-b-33 p-t-5">                     <div id="feedback"></div>
 
         <div class="wrap-input100 validate-input" data-validate = "Enter username">
             {{ form.username }}
