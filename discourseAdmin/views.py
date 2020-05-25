@@ -5,14 +5,15 @@ import datetime
 from django.core import serializers #benutzen wir das ?
 from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+from django.core.exceptions import ValidationError
+from django.contrib.auth import password_validation
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.middleware.csrf import get_token
 from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
 from discourseAdmin.models import Participant, User
-from discourseAdmin.forms import UserForm, LoginForm
+from discourseAdmin.forms import UserForm, LoginForm, ChangePasswordForm
 from discourseAdmin.logic import Utils
 from doctest import DebugRunner #wird das benutzt ?
 from django.conf import settings
@@ -302,7 +303,7 @@ def import_users(request):
 
 def change_password(request, template='user/change_password.html'):
     d = {}
-    d['form'] = LoginForm()
+    d['form'] = ChangePasswordForm()
     d['sso_links'] = sso_links
     d['ignore_sso_link'] = 'change_password' 
     if request.method == 'POST':
@@ -310,10 +311,17 @@ def change_password(request, template='user/change_password.html'):
         if user is not None:
             if request.POST['new_password'] == request.POST['repeat_new_password']:
                 user = User.objects.get(username=request.POST['username'])
-                user.set_password(request.POST['new_password'])
-                user.save()
-                print(user)
-                messages.success(request, 'Password wurde erfolgreich geändert ')
+                try:
+                    password_validation.validate_password(request.POST['new_password'])
+                except ValidationError as errs:
+                    messages.error(request, 'Das hat nicht geklappt: Folgende Fehler sind aufgetreten:')
+                    for err in errs:
+                        messages.error(request, err)                
+                else:
+                    user.set_password(request.POST['new_password'])
+                    user.save()
+                    print(user)
+                    messages.success(request, 'Password wurde erfolgreich geändert ')
             else:
                 messages.error(request, 'Fehler: Deine neuen Passwörter stimmen nicht überein.')
                 print(form);
@@ -331,11 +339,17 @@ def create_user(request, template='user/create.html'):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            item = form.save()
-            item.set_password(item.password)
-            Utils.create_discourse_user(item)
-            
-            messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
+            try:
+                password_validation.validate_password(request.POST['password'])
+            except ValidationError as errs:
+                messages.error(request, 'Das hat nicht geklappt: Folgende Fehler sind aufgetreten:')
+                for err in errs:
+                    messages.error(request, err)
+            else:
+                item = form.save()
+                item.set_password(item.password)
+                Utils.create_discourse_user(item)
+                messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
             #return redirect('http://localhost:3000')
         else:
             messages.error(request, 'Das hat nicht geklappt. Dein Account wurde nicht angelegt.')
@@ -416,7 +430,17 @@ def testisvaliduser(request, template='user/tivu.html'):
     d['form'] = LoginForm()
     if request.method == 'POST':
         print(request.POST['username'])
-        print("with password is a validPhpUser :")
+        try:
+            password_validation.validate_password(request.POST['password'])
+        except ValidationError as errs:
+            messages.error(request, 'Das hat nicht geklappt: Folgende Fehler sind aufgetreten:')
+            for err in errs:
+                messages.error(request, err)                
+                print(err)
+        else:
+            print("has a good password")
+        
+        print("and is a validPhpUser :")
         print(Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']))
         print("_______")
     return render(request, template, d)

@@ -23,7 +23,18 @@ class LoginForm(forms.ModelForm):
         fields = ('username', 'password');
     #password = forms.CharField(widget=forms.PasswordInput)
     username = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'username','pattern':'[A-Za-z0-9_]+', 'title':'Nur Buchstaben, Ziffern und Unterstrich ist erlaubt'}), min_length=3, max_length=20)
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder':'password'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder':'password'}),min_length=8)
+
+
+class ChangePasswordForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'password');
+    #password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'username','pattern':'[A-Za-z0-9_]+', 'title':'Nur Buchstaben, Ziffern und Unterstrich ist erlaubt'}), min_length=3, max_length=20)
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder':'password'}),min_length=8)
+    new_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder':'new password'}),min_length=8)
+    repeat_new_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder':'repeat new password'}),min_length=8)
 
 
 class GroupForm(forms.ModelForm):
