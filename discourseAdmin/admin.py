@@ -25,8 +25,8 @@ class MyUserAdminForm(forms.ModelForm):
 
 # Define a new User admin
 class UserAdmin(BaseUserAdmin):
-    form = MyUserAdminForm
-    print(form)
+    #form = AdminForm
+    #print(form)
     inlines = (ParticipantInline,UserGroupsInline)
     
     class Media:

@@ -21,7 +21,7 @@ from django.contrib.auth.models import User
 
 class dGroup(models.Model):
     
-    name = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, )
 
     description = models.CharField(max_length=255, null=True, blank=True)
     
@@ -43,13 +43,12 @@ class dGroup(models.Model):
 class Participant(models.Model):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False) 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    department = models.ForeignKey(dGroup, on_delete=models.CASCADE, null=True, related_name="department")
+    department = models.ForeignKey(dGroup, on_delete=models.CASCADE, null=True, blank=True, related_name="department")
     discourse_user = models.CharField(max_length=255, null=True, blank=True)
     #groups = models.ManyToManyField(Group, through='User_Groups', related_name="groups")
 
     def __str__(self):
         return "test2" #self.discourse_user+" "
- 
 
 from django.contrib.auth.models import User
 

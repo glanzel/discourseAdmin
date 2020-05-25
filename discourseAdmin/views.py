@@ -1,4 +1,4 @@
-import pdb, json
+import pdb, json, sys
 import logging #benutzen wir das ?
 import datetime
 #from django.forms.models import model_to_dict
@@ -19,11 +19,12 @@ from django.conf import settings
 from django.contrib import messages
 from pip._vendor.colorama.ansi import Fore # was macht das ?
 from gydiscourse.pydiscourse.client import DiscourseClient
+from gydiscourse.pydiscourse.exceptions import DiscourseClientError
 
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
-sso_links = {'discourse_sso':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
+sso_links = {'anmeldung':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
 
 @login_required
 def user_list(request, template='user/list.html'):
@@ -41,6 +42,8 @@ def user_list(request, template='user/list.html'):
 from discourseAdmin.forms import UserForm
 @login_required
 def user_edit(request, id, template='user/edit.html'):
+    #TODO: wieder einbauen ?
+    return JsonResponse()
     d = {}
     item = get_object_or_404(User, pk=id)
     print(serializers.serialize('json', [ item, ]))
@@ -85,9 +88,10 @@ def user_details(request, id, template='user/details.html'):
 
 @login_required
 def user_delete(request, id):
+    #TODO: wieder einbauen ?
+    return JsonResponse()
     item = User.objects.get(pk=id)
     item.delete()
-    return JsonResponse()
 
 from discourseAdmin.models import dGroup
 from discourseAdmin.forms import GroupForm
@@ -106,15 +110,21 @@ def group_create(request, template='group/create.html'):
             item = form.save()
             #print(item)
             client = Utils.getDiscourseClient()
-            groupDict = client.create_group(name=item.name)
-            item.discourse_group_id = groupDict['basic_group']['id']
-            item.save()
-            print(groupDict)
-            return redirect('group-list')
+            try:
+                groupDict = client.create_group(name=item.name)
+            except:
+                item.delete()
+                messages.error(request, 'Discourse Fehler: Der Gruppenname entspricht nicht den Anforderungen. ')
+                messages.error(request, sys.exc_info()[1])
+                print("Error:", sys.exc_info()[0])
+            else:
+                item.discourse_group_id = groupDict['basic_group']['id']
+                item.save()
+                print(groupDict)
+                return redirect('group-list')
         else:
             d['form'] = form
-            print(form)
-            return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
+            messages.error(request, 'Es ist eine Fehler im Formular aufgetreten ')
     return render(request, template, d)
 
 from discourseAdmin.forms import GroupForm
@@ -305,7 +315,11 @@ def change_password(request, template='user/change_password.html'):
                 print(user)
                 messages.success(request, 'Password wurde erfolgreich geändert ')
             else:
+                messages.error(request, 'Fehler: Deine neuen Passwörter stimmen nicht überein.')
                 print(form);
+        else:
+            messages.error(request, 'Fehler: Deine Zugangsdaten sind falsch. Entweder exitiert der Benutzer nicht oder das Passwort ist falsch.')
+            
     return render(request, template, d)
 
     
@@ -355,6 +369,7 @@ def discourse_sso(request, template='user/login.html'):
     
     d['form'] = LoginForm()
     if request.method == 'POST':
+        print("post anfrage")
         #print(request.POST['username'])
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
  
@@ -366,6 +381,7 @@ def discourse_sso(request, template='user/login.html'):
         
         # wenn Benutzer valide sso validierung mit gruppen ausliefern  
         if user is not None:
+            print("User ist vorhanden")
             Utils.watchImportantTopic(request, user.username)
             #print(user.__dict__)
             #groups = user.dgroup_set.all()
@@ -377,10 +393,10 @@ def discourse_sso(request, template='user/login.html'):
             url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, user.email, user.participant.id, user.username) #, add_groups=groupstr, groups=groupstr)
             return redirect(settings.DISCOURSE_BASE_URL + url)
         else:
-            return redirect(settings.DISCOURSE_BASE_URL + "/login/?alert=zugangsdaten sind falsch")
+            messages.error(request, 'Das hat nicht geklappt: Benutzername oder Passwort ist falsch oder dein Account ist nicht freigeschaltet.')
     else:
-        print("ahah")
-        return render(request, template, d)
+        print("get anfrage")
+    return render(request, template, d)
     #return redirect('http://discuss.example.com' + url)
 
 @csrf_exempt

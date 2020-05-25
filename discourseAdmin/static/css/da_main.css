@@ -1,6 +1,6 @@
 /* Admin Bereich */
 
-.field-groups{
+.field-groups {
     display:none;
 }
 
@@ -11,10 +11,10 @@
     display:none;
 }
 
-.field-username{
+.field-username input{
     pointer-events: none;
 }
-.field-email{
+.field-email input{
     pointer-events: none;
 }
 

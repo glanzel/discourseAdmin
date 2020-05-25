@@ -22,7 +22,7 @@ class LoginForm(forms.ModelForm):
         model = User
         fields = ('username', 'password');
     #password = forms.CharField(widget=forms.PasswordInput)
-    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'username'}))
+    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'username','pattern':'[A-Za-z0-9_]+', 'title':'Nur Buchstaben, Ziffern und Unterstrich ist erlaubt'}), min_length=3, max_length=20)
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder':'password'}))
 
 
@@ -31,6 +31,7 @@ class GroupForm(forms.ModelForm):
         model = dGroup
         #fields = "__all__"
         fields = ('name', 'description')
+    name = forms.CharField(widget=forms.TextInput(attrs={'pattern':'[A-Za-z0-9_-.]+', 'title':'Nur Buchstaben, Ziffern, Leerzeichen  und _-. erlaubt'}), min_length=3)
     #members = forms.ModelMultipleChoiceField(queryset=User.objects.all(), widget = forms.CheckboxSelectMultiple)
 
 

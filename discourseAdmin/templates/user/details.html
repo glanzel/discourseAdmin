@@ -5,19 +5,21 @@
 {% block content %}
     <div class="item">
         <h1>user - {{ user }} </h1><br />
-        <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
+        <table style="border: solid 1px gray; width: 300px; " id="item-list">
             <tr style="background-color: #DDD">
                 <th style="padding: 10px;">ID</th>
                 <th>Name</th>
-                <th>Action</th>
+                <!--<th>Action</th>-->
             </tr>
             <tr>
                 <td style="padding: 10px;">{{ user.id }}</td>
                 <td>{{ user }}</td>
+                <!--
                 <td>
 					<a class="button" href="{% url 'user-delete' user.id %}" id="delete-item" value="delete" />delete</a>
 					<a class="button" href="{% url 'user-edit' user.id %}" id="edit-item" value="edit" />edit</a>
 				</td>
+                -->
             </tr>
         </table>
         <br />

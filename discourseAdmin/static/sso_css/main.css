@@ -1,5 +1,10 @@
 
 
+.messages .error{
+    color:red;
+}
+
+
 .hide {
    display: none;
 }
@@ -16,8 +21,6 @@
   font-family: Ubuntu-Bold;
   src: url('../fonts/ubuntu/Ubuntu-Bold.ttf');
 }
-
-
 
 
 /*//////////////////////////////////////////////////////////////////
