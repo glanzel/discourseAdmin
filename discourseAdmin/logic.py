@@ -45,6 +45,7 @@ class Utils:
         #user = User.objects.filter(username=request.POST['username']).get()
         user,created = User.objects.get_or_create(username=username);
         user.set_password(password)
+        user.save()
         if created :
             # TODO: gucken ob der Benutzer bereits in discourse besteht.            
             try: dUser = client.user(username)
