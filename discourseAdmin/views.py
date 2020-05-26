@@ -370,7 +370,8 @@ def discourse_sso(request, template='user/login.html'):
 
     d = {}
     d['sso_links'] = sso_links
-    
+    if hasattr(settings, 'FORCE_DISCOURSE_ADMIN_URL') : d['force_url'] = settings.FORCE_DISCOURSE_ADMIN_URL    
+    else : d['force_url'] = False
     #sso und sig per get oder post auslesen
     d["sso"] = payload = request.GET.get('sso')
     #if d["sso"] == None : d["sso"] = payload = request.POST['sso']

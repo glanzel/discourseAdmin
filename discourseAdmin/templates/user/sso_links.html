@@ -3,9 +3,16 @@
 
     {% if link_method != ignore_sso_link %}
             <div class="container-login100-form-btn m-t-32">
+
+            {% if force_url %}
+                <a href="{{force_url}}{{link_method}}">
+                    {{link_title}}
+                </a>
+            {% else %}
                 <a href="{% url link_method %}">
                     {{link_title}}
                 </a>
+            {% endif %}
             </div>
     {% endif %}
 
