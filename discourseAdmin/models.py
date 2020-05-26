@@ -58,7 +58,7 @@ class User_Groups(models.Model):
 
     group = models.ForeignKey(dGroup, null=True, blank=True, on_delete=models.CASCADE)
 
-    rights = models.IntegerField(null=True, default=None)
+    rights = models.BooleanField(null=True, default=0)
 
     update_date = models.DateTimeField(auto_now=True, null=True)
     create_date = models.DateTimeField(auto_now_add=True, null=True)

@@ -203,17 +203,20 @@ def add_user_to_group(request, user_id, group_id):
     if User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id) : 
         ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
         client = Utils.getDiscourseClient()
-        client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
-
+        try: client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
+        except: 
+            ug.delete();
+            messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht zu dieser Gruppe hinzugefügt werden')
     return redirect('user-details', id=user_id)
 
 @login_required
 def delete_user_from_group(request, user_id, group_id):
     if User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id) : 
         ug = User_Groups.objects. get(user_id=user_id, group_id = group_id)
-        ug.delete()
         client = Utils.getDiscourseClient()
-        client.delete_group_member(ug.group.discourse_group_id,ug.user.participant.discourse_user)
+        try: client.delete_group_member(ug.group.discourse_group_id,ug.user.participant.discourse_user)
+        except: messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht von dieser Gruppe gelöscht werden')
+        else: ug.delete()
 
     return redirect('user-details', id=user_id)
 
@@ -232,19 +235,22 @@ def import_dgroups(request):
     for groupDict in groupsDict:
         # gruppe in da erzeugen falls noch nicht vorhanden
         groupObj, created = dGroup.objects.get_or_create(discourse_group_id=groupDict['id'])
-        print("import: "+str(groupDict['id'])+" : "+groupDict['name'])
-        if created: 
-            print("created")
-            for key in groupDict:
-                if key != "id":
-                    setattr(groupObj, key, groupDict[key])
-            groupObj.create_date = datetime.datetime.now()
-        else: 
-            print("already exists") #TODO: Discourse group aktualisieren ?      
-            #groupObj.update_date = datetime.datetime.now()
-        groupObj.discourse_group_id = groupDict['id']         
-        groupObj.save();
-        Utils.import_dgroup_members(groupDict['name'], groupObj.id)
+        if groupDict['automatic'] & (groupDict['name'] != "vertrauensstufe_0") :
+            groupObj.delete();
+        else:    
+            print("import: "+str(groupDict['id'])+" : "+groupDict['name'])
+            if created: 
+                print("created")
+                for key in groupDict:
+                    if key != "id":
+                        setattr(groupObj, key, groupDict[key])
+                groupObj.create_date = datetime.datetime.now()
+            else: 
+                print("already exists") #TODO: Discourse group aktualisieren ?      
+                #groupObj.update_date = datetime.datetime.now()
+            groupObj.discourse_group_id = groupDict['id']         
+            groupObj.save();
+            Utils.import_dgroup_members(groupDict['name'], groupObj.id)
 
     return JsonResponse()
 
