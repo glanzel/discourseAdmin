@@ -25,7 +25,7 @@ from gydiscourse.pydiscourse.exceptions import DiscourseClientError
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
-sso_links = {'anmeldung':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
+sso_links = {'anmeldung':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user':'Login:Adminbereich'}
 
 @login_required
 def user_list(request, template='user/list.html'):
