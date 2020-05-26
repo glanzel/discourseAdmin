@@ -25,7 +25,7 @@ from gydiscourse.pydiscourse.exceptions import DiscourseClientError
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
-sso_links = {'anmeldung':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user':'Login:Adminbereich'}
+sso_links = {'anmeldung':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
 
 @login_required
 def user_list(request, template='user/list.html'):
@@ -371,7 +371,7 @@ def discourse_sso(request, template='user/login.html'):
     d = {}
     d['sso_links'] = sso_links
     if hasattr(settings, 'FORCE_DISCOURSE_ADMIN_URL') : d['force_url'] = settings.FORCE_DISCOURSE_ADMIN_URL    
-    else : d['force_url'] = False
+    else :  d['force_url'] = False
     #sso und sig per get oder post auslesen
     d["sso"] = payload = request.GET.get('sso')
     #if d["sso"] == None : d["sso"] = payload = request.POST['sso']
