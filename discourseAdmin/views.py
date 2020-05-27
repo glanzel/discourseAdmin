@@ -274,6 +274,8 @@ def import_users(request):
         if 'suspended_at' in userDict : 
             userObj.is_active = False;
             userObj.save();
+            
+
         
         if created: 
         # wenn der benutzer per login erzeugt wurde muss er hier aktualisiert werden
@@ -286,6 +288,9 @@ def import_users(request):
             for key in userDict:
                 if key != "id":
                     setattr(userObj, key, userDict[key])
+
+            if not userDetails['active'] : 
+                userObj.is_active = False;
     
             userObj.save();
 

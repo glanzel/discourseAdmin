@@ -83,6 +83,7 @@ class Utils:
         if ssoDetails != None :
             print(ssoDetails['external_email'])
             user.email = ssoDetails['external_email']
+        print(userDetails)
 
         for key in dUser:
             if key != "id":
@@ -91,7 +92,9 @@ class Utils:
 
         if 'suspended_at' in userDetails : 
             user.is_active = False;
-
+        if not userDetails['active'] : 
+            user.is_active = False;
+        
         user.save();
         try:
             p = user.participant
