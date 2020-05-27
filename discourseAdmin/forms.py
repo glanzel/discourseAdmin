@@ -52,6 +52,8 @@ class User_GroupsForm(forms.ModelForm):
     class Meta:
         model = User_Groups
         fields = "__all__"
+    rights = forms.BooleanField(label="is_admin", required=False)
+
         
         
 # class HasDiscoGroups(forms.Form):

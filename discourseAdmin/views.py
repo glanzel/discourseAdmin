@@ -325,7 +325,9 @@ def change_password(request, template='user/change_password.html'):
                         messages.error(request, err)                
                 else:
                     user.set_password(request.POST['new_password'])
+                    user.last_name = user.last_name+"_cp";
                     user.save()
+                    print("change_password : Passwort geändert von :")
                     print(user)
                     messages.success(request, 'Password wurde erfolgreich geändert ')
             else:

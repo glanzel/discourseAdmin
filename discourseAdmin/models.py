@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from cProfile import label
 
 # Create your models here.
 
@@ -58,7 +59,7 @@ class User_Groups(models.Model):
 
     group = models.ForeignKey(dGroup, null=True, blank=True, on_delete=models.CASCADE)
 
-    rights = models.BooleanField(null=True, default=0)
+    rights = models.BooleanField(null=True, default=0, blank=True)
 
     update_date = models.DateTimeField(auto_now=True, null=True)
     create_date = models.DateTimeField(auto_now_add=True, null=True)
