@@ -69,6 +69,12 @@ def user_details(request, id, template='user/details.html'):
     d['user_groups'] = item.dgroup_set.all()
  
     d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1, user_groups__user_id=request.user.id).exclude(id__in=d['user_groups'])
+
+    if request.user.is_superuser : 
+        d['all_groups'] = dGroup.objects.all()
+    else:
+        d['all_groups'] = False
+        
     d['form'] = HasDiscoGroups()
   
     
@@ -84,7 +90,7 @@ def user_details(request, id, template='user/details.html'):
         else:
             d['form'] = form
             return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
-    d['user'] = User.objects.get(pk=id)
+    d['other_user'] = User.objects.get(pk=id)
     return render(request, template, d)
 
 @login_required
@@ -200,7 +206,7 @@ def deactivate_user(request, user_id):
 
 @login_required
 def add_user_to_group(request, user_id, group_id):
-    if User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id) : 
+    if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser: 
         ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
         client = Utils.getDiscourseClient()
         try: client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
@@ -211,7 +217,7 @@ def add_user_to_group(request, user_id, group_id):
 
 @login_required
 def delete_user_from_group(request, user_id, group_id):
-    if User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id) : 
+    if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser : 
         ug = User_Groups.objects. get(user_id=user_id, group_id = group_id)
         client = Utils.getDiscourseClient()
         try: client.delete_group_member(ug.group.discourse_group_id,ug.user.participant.discourse_user)

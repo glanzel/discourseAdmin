@@ -1,10 +1,10 @@
 {% extends "discourse_base.html" %}
 
-{% block page-title %}user - {{ user }} {% endblock %}
+{% block page-title %}user - {{ other_user }} {% endblock %}
 
 {% block content %}
     <div class="item">
-        <h1>user - {{ user }} </h1><br />
+        <h1>user - {{ other_user }} </h1><br />
         <table style="border: solid 1px gray; width: 300px; " id="item-list">
             <tr style="background-color: #DDD">
                 <th style="padding: 10px;">ID</th>
@@ -12,12 +12,12 @@
                 <!--<th>Action</th>-->
             </tr>
             <tr>
-                <td style="padding: 10px;">{{ user.id }}</td>
-                <td>{{ user }}</td>
+                <td style="padding: 10px;">{{ other_user.id }}</td>
+                <td>{{ other_user }}</td>
                 <!--
                 <td>
-					<a class="button" href="{% url 'user-delete' user.id %}" id="delete-item" value="delete" />delete</a>
-					<a class="button" href="{% url 'user-edit' user.id %}" id="edit-item" value="edit" />edit</a>
+					<a class="button" href="{% url 'user-delete' other_user.id %}" id="delete-item" value="delete" />delete</a>
+					<a class="button" href="{% url 'user-edit' other_user.id %}" id="edit-item" value="edit" />edit</a>
 				</td>
                 -->
             </tr>
@@ -27,18 +27,28 @@
         <b>Benutzer-Gruppen:</b>
         <br />
         {% for group in user_groups %}
-            <a href="{% url 'delete_user_from_group' user.id group.id  %}">{{group}}</a>
+            <a href="{% url 'delete_user_from_group' other_user.id group.id  %}">{{group}}</a>
         {% endfor %}
 
         <br /><br />
         <b>Zu Gruppe hinzufügen:</b><br>
         {% for group in admin_groups %}
-            <a href="{% url 'add_user_to_group' user.id group.id  %}">{{group}}</a>
+            <a href="{% url 'add_user_to_group' other_user.id group.id  %}">{{group}}</a>
         {% endfor %}
         <br />
+        
+        {% if all_groups %}
+            <br />
+            <b>Zu Gruppe hinzufügen: (GesamtAdmin Only Bereich): </b><br>
+            {% for group in all_groups %}
+                <a href="{% url 'add_user_to_group' other_user.id group.id  %}">{{group}}</a>
+            {% endfor %}
+        {% endif %}
+
+
 <!--
         <div id="add-form-div" >
-            <form action="{% url 'user-details' user.id %}" method="POST" id="add-form">
+            <form action="{% url 'user-details' other_user.id %}" method="POST" id="add-form">
                     <div id="form-fields">
                         {% csrf_token %}
                         {{ form }}
