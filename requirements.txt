@@ -5,4 +5,4 @@ django3scaffold
 setuptools
 mysqlclient
 django-cors-headers
-easyaudit
+django-easy-audit
