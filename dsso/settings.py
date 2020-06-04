@@ -24,6 +24,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGIN_URL = '/admin/login'
 WWW_ROOT = BASE_DIR
 
+
+
+DJANGO_EASY_AUDIT_WATCH_AUTH_EVENTS = False
+DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = False
+DJANGO_EASY_AUDIT_READONLY_EVENTS = False
+DJANGO_EASY_AUDIT_ADMIN_SHOW_MODEL_EVENTS = True
+DJANGO_EASY_AUDIT_ADMIN_SHOW_AUTH_EVENTS = False
+DJANGO_EASY_AUDIT_ADMIN_SHOW_REQUEST_EVENTS = False
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -35,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'discourseAdmin',
     'dsso',
+    'easyaudit',
     'django3scaffold',
     #'debug_toolbar', # eventuell später einbauen ?
     'corsheaders',
@@ -50,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -59,7 +71,7 @@ ROOT_URLCONF = 'dsso.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/var/www/dsso/dsso/'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

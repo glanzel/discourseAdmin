@@ -246,7 +246,7 @@ iframe {
 	width: 80%
 }
 
-.wrap-login100 input {
+.wrap-login100 input, .wrap-login100 .input  {
   font-family: Ubuntu-Regular;
   font-size: 20px;
   color: #555555;

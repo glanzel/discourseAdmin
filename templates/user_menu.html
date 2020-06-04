@@ -1,0 +1,31 @@
+{% load i18n static %}    
+<div id="header" class="header">
+        <div id="branding">
+        {% block branding2 %}discourse<b>Admin</b>{% endblock %}
+        </div>
+        {% block usertools %}
+        {% if user.is_authenticated %}
+            <div id="user-tools">
+                {% block welcome-msg %}
+                    {% trans 'Welcome,' %}
+                    <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+                {% endblock %}
+                {% block userlinks %}
+                    <a href="{% url 'anmeldung' %}">{% trans 'Discourse Login' %}</a>
+                    <span>/</span>
+                    <a href="{% url 'change_password' %}">{% trans 'Passwort ändern' %}</a>
+                    <span>/</span>
+                    <a href="{% url 'create_user' %}">{% trans 'Benutzer erstellen' %}</a>
+                    <!--                     
+                        {% if user.has_usable_password %}
+                        <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
+                        {% endif %}
+                    -->
+                    <span>/</span>
+                    <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
+                {% endblock %}
+            </div> <!-- END user-tools-->
+        {% endif %}
+        {% endblock %}
+        {% block nav-global %}{% endblock %}
+    </div>

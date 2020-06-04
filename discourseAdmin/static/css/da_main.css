@@ -17,4 +17,16 @@
 .field-email input{
     pointer-events: none;
 }
-
+.header{
+    width: auto;
+    height: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 40px;
+    color: #ffc;
+    overflow: hidden;
+}
+.menu{
+    background: #79aec8;
+}

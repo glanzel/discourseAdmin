@@ -1,33 +1,36 @@
 import pdb, json, sys
 import logging #benutzen wir das ?
 import datetime
-#from django.forms.models import model_to_dict
-from django.core import serializers #benutzen wir das ?
-from django.contrib.auth.decorators import login_required
 
+from django.core import serializers #benutzen wir das ?
 from django.core.exceptions import ValidationError
+from django.conf import settings
+
+from django.contrib import auth
 from django.contrib.auth import password_validation
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.models import User, Group
+from django.contrib import messages
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.contrib.auth.models import User, Group
 from django.middleware.csrf import get_token
-from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
+
 from discourseAdmin.models import Participant, User
 from discourseAdmin.forms import UserForm, LoginForm, ChangePasswordForm
 from discourseAdmin.logic import Utils
-from doctest import DebugRunner #wird das benutzt ?
-from django.conf import settings
-from django.contrib import messages
-from pip._vendor.colorama.ansi import Fore # was macht das ?
-from gydiscourse.pydiscourse.client import DiscourseClient
-from gydiscourse.pydiscourse.exceptions import DiscourseClientError
 
+from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
+
+#from doctest import DebugRunner #wird das benutzt ?
+#from pip._vendor.colorama.ansi import Fore # was macht das ?
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
-sso_links = {'anmeldung':'Login', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
+sso_links = {'anmeldung':'Login:Discourse', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
 
-@login_required
+@staff_member_required
 def user_list(request, template='user/list.html'):
     d = {}
 
@@ -41,7 +44,7 @@ def user_list(request, template='user/list.html'):
     return render(request, template, d)
 
 from discourseAdmin.forms import UserForm
-@login_required
+@staff_member_required
 def user_edit(request, id, template='user/edit.html'):
     #TODO: wieder einbauen ?
     return JsonResponse()
@@ -62,7 +65,7 @@ def user_edit(request, id, template='user/edit.html'):
     return render(request, template, d)
 
 from discourseAdmin.forms import HasDiscoGroups
-@login_required
+@staff_member_required
 def user_details(request, id, template='user/details.html'):
     d = {}
     item = get_object_or_404(User, pk=id)
@@ -93,7 +96,7 @@ def user_details(request, id, template='user/details.html'):
     d['other_user'] = User.objects.get(pk=id)
     return render(request, template, d)
 
-@login_required
+@staff_member_required
 def user_delete(request, id):
     #TODO: wieder einbauen ?
     return JsonResponse()
@@ -102,7 +105,7 @@ def user_delete(request, id):
 
 from discourseAdmin.models import dGroup
 from discourseAdmin.forms import GroupForm
-@login_required
+@staff_member_required
 def group_list(request, template='group/list.html'):
     d = {}
     d['group_list'] = dGroup.objects.all()
@@ -135,7 +138,7 @@ def group_create(request, template='group/create.html'):
     return render(request, template, d)
 
 from discourseAdmin.forms import GroupForm
-@login_required
+@staff_member_required
 def group_details(request, id, template='group/details.html'):
     d = {}
     item = get_object_or_404(dGroup, pk=id)
@@ -154,14 +157,14 @@ def group_details(request, id, template='group/details.html'):
     d['group'] = dGroup.objects.get(pk=id)
     return render(request, template, d)
 
-@login_required
+@staff_member_required
 def group_delete(request, id):
     item = dGroup.objects.get(pk=id)
     item.delete()
     return JsonResponse()
 
 from discourseAdmin.models import User_Groups
-@login_required
+@staff_member_required
 def activate_user(request, user_id):
     #TODO: check authorisation ? Nö darf jede aus dem Staff
     user = User.objects.get(id=user_id)
@@ -183,7 +186,7 @@ def activate_user(request, user_id):
 
     return redirect('user-list')
 
-@login_required
+@staff_member_required
 def deactivate_user(request, user_id):
     #TODO: check authorisation ? Nö darf jede aus dem Staff
     user = User.objects.get(id=user_id)
@@ -204,7 +207,27 @@ def deactivate_user(request, user_id):
     return redirect('user-list')
 
 
-@login_required
+@staff_member_required
+def set_department(request, user_id, group_id):
+    if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser: 
+        dgroup = dGroup.objects.get(id=group_id) 
+        otheruser = User.objects.get(id=user_id)
+        otheruser.participant.department = dgroup
+        otheruser.participant.save()
+    return redirect('user-details', id=user_id)
+
+
+@staff_member_required
+def unset_department(request, user_id):
+    otheruser = User.objects.get(id=user_id)
+    group_id = otheruser.participant.department.id
+    if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser: 
+        otheruser.participant.department = None
+        otheruser.participant.save()
+    return redirect('user-details', id=user_id)
+
+
+@staff_member_required
 def add_user_to_group(request, user_id, group_id):
     if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser: 
         ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
@@ -215,7 +238,18 @@ def add_user_to_group(request, user_id, group_id):
             messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht zu dieser Gruppe hinzugefügt werden')
     return redirect('user-details', id=user_id)
 
-@login_required
+@staff_member_required
+def add_user_to_group(request, user_id, group_id):
+    if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser: 
+        ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
+        client = Utils.getDiscourseClient()
+        try: client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
+        except: 
+            ug.delete();
+            messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht zu dieser Gruppe hinzugefügt werden')
+    return redirect('user-details', id=user_id)
+
+@staff_member_required
 def delete_user_from_group(request, user_id, group_id):
     if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser : 
         ug = User_Groups.objects. get(user_id=user_id, group_id = group_id)
@@ -226,14 +260,14 @@ def delete_user_from_group(request, user_id, group_id):
 
     return redirect('user-details', id=user_id)
 
-@login_required    
+@staff_member_required    
 def user_groups_delete(request, id):
     item = User_Groups.objects.get(pk=id)
     item.delete()
     return JsonResponse()
 
 from django.core.serializers.json import DjangoJSONEncoder
-@login_required
+@staff_member_required
 #import_dgroups aktualisiert von discourse -> discourseAdmin (bitte vorsichtig verwenden)    
 def import_dgroups(request):
     client = Utils.getDiscourseClient()
@@ -260,6 +294,7 @@ def import_dgroups(request):
 
     return JsonResponse()
 
+@staff_member_required    
 def import_dgroup(request, groupname, da_group_id):
     limit = request.GET.get("limit") if request.GET.get("limit") else 1000
     offset = request.GET.get("offset") if request.GET.get("offset") else 0
@@ -267,7 +302,7 @@ def import_dgroup(request, groupname, da_group_id):
     Utils.import_dgroup_members(groupname, da_group_id, limit, offset)
     return JsonResponse()
 
-@login_required    
+@staff_member_required    
 def import_users(request):
     client = Utils.getDiscourseClient()
     usersDict = client.users()
@@ -318,35 +353,47 @@ def import_users(request):
     return JsonResponse()
     #return JsonResponse(usersDict, DjangoJSONEncoder,False) #warum geht das nicht es sollte korrekt sein
 
-def change_password(request, template='user/change_password.html'):
+
+def home(request, template='home.html'):
+    d = {}
+    d['sso_links'] = sso_links
+    return render(request, template, d)
+
+
+def change_password(request, template='user/change_password.html', other_user = None):
     d = {}
     d['form'] = ChangePasswordForm()
     d['sso_links'] = sso_links
     d['ignore_sso_link'] = 'change_password' 
+    d['theuser'] = request.user
+    
     if request.method == 'POST':
-        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-        if user is not None:
-            if request.POST['new_password'] == request.POST['repeat_new_password']:
-                user = User.objects.get(username=request.POST['username'])
-                try:
-                    password_validation.validate_password(request.POST['new_password'])
-                except ValidationError as errs:
-                    messages.error(request, 'Das hat nicht geklappt: Folgende Fehler sind aufgetreten:')
-                    for err in errs:
-                        messages.error(request, err)                
-                else:
-                    user.set_password(request.POST['new_password'])
-                    user.last_name = user.last_name+"_cp";
-                    user.save()
-                    print("change_password : Passwort geändert von :")
-                    print(user)
-                    messages.success(request, 'Password wurde erfolgreich geändert ')
-            else:
-                messages.error(request, 'Fehler: Deine neuen Passwörter stimmen nicht überein.')
-                print(form);
+        if not request.user.is_authenticated:
+            user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+            if user is None:
+                messages.error(request, 'Fehler: Deine Zugangsdaten sind falsch. Entweder exitiert der Benutzer nicht oder das Passwort ist falsch.')
+                return render(request, template, d)
+        else: user = request.user
+        Utils.change_password(request, user, request.POST['new_password'], request.POST['repeat_new_password'])
+    return render(request, template, d)
+
+def change_user_password(request, user_id, template='user/change_user_password.html'):
+    d = {}
+    d['form'] = ChangePasswordForm()
+    d['sso_links'] = sso_links
+    d['ignore_sso_link'] = 'change_password' 
+    d['user_id'] = user_id;
+    d['theuser'] = other_user = User.objects.get(id=user_id)
+     
+    if request.method == 'POST':
+        ou_dep = other_user.participant.department
+        u_dep = request.user.participant.department
+        if ( request.user.is_staff and ((ou_dep is None) or (u_dep == ou_dep)) or request.user.is_superuser) :
+            Utils.change_password(request, request.user, request.POST['new_password'], request.POST['repeat_new_password'])
         else:
-            messages.error(request, 'Fehler: Deine Zugangsdaten sind falsch. Entweder exitiert der Benutzer nicht oder das Passwort ist falsch.')
-            
+            messages.error("keine Berechtigung")
+            return redirect('user/'+other_user_id)
+
     return render(request, template, d)
 
     
@@ -368,6 +415,8 @@ def create_user(request, template='user/create.html'):
                 item = form.save()
                 item.set_password(item.password)
                 Utils.create_discourse_user(item)
+                basicgroup = Utils.get_or_create_basic_group(groupname)
+                basicgroup.user_set.add(item)
                 messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
             #return redirect('http://localhost:3000')
         else:
@@ -384,7 +433,20 @@ from gydiscourse.pydiscourse import sso
 from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
-def discourse_sso(request, template='user/login.html'):
+def login(request, template='user/login.html'):
+    d =  {}
+    d['form'] = LoginForm()
+    if request.method == 'POST':
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        if user is not None: auth.login(request, user)        
+        return redirect('ua/easyaudit/crudevent/')
+    return render(request, template, d)
+        
+
+
+
+@csrf_exempt
+def discourse_sso(request, template='user/sso_login.html'):
     print("discourse_sso")
 
     d = {}
@@ -433,6 +495,17 @@ def discourse_sso(request, template='user/login.html'):
     return render(request, template, d)
     #return redirect('http://discuss.example.com' + url)
 
+
+@staff_member_required    
+def set_basic_group(request):
+    basicgroup = Utils.get_or_create_basic_group()
+    print(basicgroup);
+    users = User.objects.all();
+    for user in users:
+        basicgroup.user_set.add(user)
+    return JsonResponse()
+        
+
 @csrf_exempt
 def testpd(request):
     #client = Utils.getDiscourseClient()
@@ -464,3 +537,5 @@ def testisvaliduser(request, template='user/tivu.html'):
         print(Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']))
         print("_______")
     return render(request, template, d)
+
+

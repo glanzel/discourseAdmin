@@ -12,7 +12,7 @@ urlpatterns = (
     path('group/<int:id>/', views.group_details, name='group-details'),
     path('group/<int:id>/delete/', views.group_delete, name='group-delete'),
     
-    path('', views.create_user, name='create_user'),
+    path('', views.home, name='home'),
 
     path('user/', views.user_list, name='user'),
     path('user-list/', views.user_list, name='user-list'),
@@ -28,10 +28,18 @@ urlpatterns = (
     path('user/<int:user_id>/deactivate', views.deactivate_user, name='deactivate_user'),
     path('create_user', views.create_user, name='create_user'),
     path('change_password', views.change_password, name='change_password'),
-    path('testisvaliduser', views.testisvaliduser, name='testisvaliduser'),
 
+    path('testisvaliduser', views.testisvaliduser, name='testisvaliduser'),
+    path('login', views.login, name='login'),
+    path('set_basic_group', views.set_basic_group, name='set_basic_group'),
+    
+
+    path('user/<int:user_id>/change_password', views.change_user_password, name='change_user_password'),
     path('user/<int:user_id>/add_to_group/<int:group_id>', views.add_user_to_group, name='add_user_to_group'),
     path('user/<int:user_id>/delete_from_group/<int:group_id>', views.delete_user_from_group, name='delete_user_from_group'),
+    path('user/<int:user_id>/set_department/<int:group_id>', views.set_department, name='set_department'),
+    path('user/<int:user_id>/unset_department>', views.unset_department, name='unset_department'),
+    
 
     #path('discourse_sso/', views.discourse_sso, name='discourse_sso'),
     path('anmeldung/index.html', views.discourse_sso, name='anmeldung1'),

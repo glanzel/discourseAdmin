@@ -1,9 +1,15 @@
 from sys import argv
 
 import requests
-from django.conf import settings
-from gydiscourse.pydiscourse.client import DiscourseClient
 from requests.auth import HTTPBasicAuth
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import Group, Permission
+from django.contrib.auth import password_validation
+from django.contrib import messages
+
+from gydiscourse.pydiscourse.client import DiscourseClient
 from discourseAdmin.models import User_Groups, Participant, User
 
 from dsso.settings_local import PHP_LOGIN_CHECK_URI, PHP_LOGIN_CHECK_AUTH
@@ -146,7 +152,34 @@ class Utils:
                 print("delete other occurance")
                 ug.delete()
             no = no+1
-            
+    
+    @staticmethod
+    def get_or_create_basic_group(groupname = "basic_group"):
+        if hasattr(settings, "BASIC_GROUP_NAME") : groupname = settings.BASIC_GROUP_NAME
+        basicgroup, created = Group.objects.get_or_create(name = groupname)
+        basicgroup.permissions.add(Permission.objects.get(codename="view_crudevent"))
+        return basicgroup
+
+    @staticmethod
+    def change_password(request, user, new_password, repeat_new_password):
+        if new_password == repeat_new_password:
+            user = User.objects.get(username=user.username)
+            try:
+                password_validation.validate_password(new_password)
+            except ValidationError as errs:
+                messages.error(request, 'Das hat nicht geklappt: Folgende Fehler sind aufgetreten:')
+                for err in errs:
+                    messages.error(request, err)                
+            else:
+                user.set_password(new_password)
+                user.last_name = user.last_name+"_cp";
+                user.save()
+                print("change_password : Passwort geändert von :")
+                print(user)
+                messages.success(request, 'Password wurde erfolgreich geändert ')
+        else:
+            messages.error(request, 'Fehler: Deine neuen Passwörter stimmen nicht überein.')
+ 
     
     # aus php importiert
     @classmethod

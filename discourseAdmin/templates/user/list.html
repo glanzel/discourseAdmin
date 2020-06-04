@@ -5,15 +5,20 @@
 {% block content %}
     <h4>user list</h4><br />
     <a href="{% url 'user-list' %}">all</a> |
+    <a href="{% url 'user-list' %}?is_active=True">active</a> |
     <a href="{% url 'user-list' %}?is_active=False">inactive</a> |
     <a href="{% url 'user-list' %}?is_staff=True">staff</a> |
-    <a href="{% url 'user-list'  %}?is_superuser=True">admins</a> 
+    <a href="{% url 'user-list'  %}?is_superuser=True">admins</a> |
+    {% if user.participant.department != None %}
+        <a href="{% url 'user-list' %}?department={{user.participant.department}}">hg:{{user.participant.department}}</a>
+    {% endif %}  
     
-    <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
+    <table style="border: solid 1px gray;" id="item-list">
         <tr style="background-color: #DDD">
             <th style="padding: 10px;">ID</th>
             <th>Name</th>
             <th>created</th>
+            <th>Bereich</th>
             <th>Active</th>
             <th>Action</th>
         </tr>
@@ -22,6 +27,7 @@
             <td style="padding: 10px;">{{ item.id }}</td>
             <td>{{ item }}</td>
             <td>{{ item.date_joined|date:"d.m.Y" }}</td>
+            <td>{{ item.participant.department }}</td>
             <td>
             {% if item.is_active %}
                 yes
@@ -35,6 +41,7 @@
             {% else %}
                 <a href="{% url 'activate_user' item.id %}">activate</a>
             {% endif %}
+            <a href="{% url 'change_user_password' item.id %}">changePass</a>
    
                 
                 

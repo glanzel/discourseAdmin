@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from discourseAdmin.admin import user_admin_site
 #from discourse_django_sso import views
 
 #from crudbuilder import urls
@@ -23,6 +24,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('ua/', user_admin_site.urls),
     path(r'', include('discourseAdmin.urls')),
 
 ]

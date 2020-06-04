@@ -17,6 +17,9 @@
     <link rel="stylesheet" type="text/css" href='{% static "vendor/daterangepicker/daterangepicker.css" %}'>
     <link rel="stylesheet" type="text/css" href='{% static "sso_css/util.css" %}'>
     <link rel="stylesheet" type="text/css" href='{% static "sso_css/main.css" %}'>
+    <link rel="stylesheet" type="text/css" href="{% static "css/da_main.css" %}">
+
+
 </head>
 <body>
     {% if messages %}
@@ -26,6 +29,13 @@
         {% endfor %}
       </ul>
     {% endif %}
+    {% if user.is_authenticated %}
+        <!-- Header -->
+        {% include "user_menu.html" %}
+        <!-- END Header -->
+        {% include "menu.html" %}
+    {% endif %}
+    
     <div id="background">
         <video autoplay muted loop id="bgVideo">
             <source src="/dastatic/videos/loginBackground3.webm" type="video/webm">
