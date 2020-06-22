@@ -89,6 +89,11 @@ class Utils:
         if ssoDetails != None :
             print(ssoDetails['external_email'])
             user.email = ssoDetails['external_email']
+        else:
+            emails = client.user_emails(dUser['username'])
+            user.email = emails['email']
+            print("client.user_emails")
+            print(emails['email'])
         print(userDetails)
 
         for key in dUser:
@@ -117,11 +122,11 @@ class Utils:
         members = client.group_members(groupname, limit=limit, offset=offset)
 
         for member in members:
-            print(member['username'])
+            print(member)
 
             # nutzer in da erstellen falls noch nicht vorhanden
             user, u_created = User.objects.get_or_create(username=member['username'])
-            if u_created :
+            if True :
                 user = Utils.import_discourse_user(member,user)
 
             #print(user.__dict__)

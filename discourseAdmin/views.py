@@ -43,6 +43,26 @@ def user_list(request, template='user/list.html'):
         d['user_list'] = d['user_list'].filter(**filters)
     return render(request, template, d)
 
+@staff_member_required
+def fix_users_email(request):
+
+    users = User.objects.all().filter(email="")
+    for user in users:
+        print(user.username)
+        client = Utils.getDiscourseClient()
+        try:
+            dUser = client.user(username=user.username)
+        except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
+        else :
+            emails = client.user_emails(user.username)
+            user.email = emails['email']
+            print(emails['email'])
+            user.save()
+
+    return JsonResponse()
+
+
+
 from discourseAdmin.forms import UserForm
 @staff_member_required
 def user_edit(request, id, template='user/edit.html'):
