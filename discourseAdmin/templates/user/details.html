@@ -32,7 +32,7 @@
         {% for group in user_groups %}
             {% if other_user.participant.department != group %}
                 <a href="{% url 'delete_user_from_group' other_user.id group.id  %}">{{group}}</a>
-                {% if group.is_department and other_user.participant.department is null %} 
+                {% if group.is_department and other_user.participant.department is None %} 
                     <a href="{% url 'set_department' other_user.id group.id  %}"><img title="Als Hauptgruppe festlegen" alt="[Set Hauptgruppe]" src='{% static "images/icons/abteilung.svg" %}' ></a>
                 {% endif %},
             {% endif %}

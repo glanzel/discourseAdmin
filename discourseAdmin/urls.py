@@ -46,6 +46,7 @@ urlpatterns = (
     path('anmeldung/', views.discourse_sso, name='anmeldung'),
 
     path('testpd/', views.testpd, name='testpd'),
-    path('fix_users_email', views.fix_users_email, name='fix_users_email' )
+    path('fix_users_email', views.fix_users_email, name='fix_users_email' ),
+    path('init_set_departments', views.init_set_departments, name='init_set_departments' )
 
 )

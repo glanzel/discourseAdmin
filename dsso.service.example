@@ -1,0 +1,19 @@
+[Unit]
+Description = discourseAdmin
+After = network.target
+
+[Service]
+PermissionsStartOnly = true
+PIDFile = /run/discourseAdmin/discourseAdmin.pid
+User = webkomm
+Group = webkomm
+WorkingDirectory = /home/webkomm/discourseAdmin
+ExecStartPre = /bin/mkdir /run/discourseAdmin
+ExecStartPre = /bin/chown -R webkomm:webkomm /run/discourseAdmin
+ExecStart = /usr/bin/env gunicorn3 dsso.wsgi -b 0.0.0.0:4911 --pid /run/discourseAdmin/discourseAdmin.pid --log-file=/var/log
+/gunicorn/discourseAdmin.log --log-level DEBUG --capture-output
+ExecReload = /bin/kill -s HUP $MAINPID
+ExecStop = /bin/kill -s TERM $MAINPID
+ExecStopPost = /bin/rm -rf /run/discourseAdmin
+PrivateTmp = true
+

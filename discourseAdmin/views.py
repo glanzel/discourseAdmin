@@ -43,6 +43,7 @@ def user_list(request, template='user/list.html'):
         d['user_list'] = d['user_list'].filter(**filters)
     return render(request, template, d)
 
+# migration only - später verschieben oder löschen
 @staff_member_required
 def fix_users_email(request):
 
@@ -61,6 +62,30 @@ def fix_users_email(request):
 
     return JsonResponse()
 
+# migration only später verschieben oder löschen
+@staff_member_required
+def init_set_departments(request):
+
+    users = User.objects.all()
+    for user in users:
+        try: 
+            if user.participant.department is None:
+                groups = user.dgroup_set.all()
+                for group in groups:
+                    if group.is_department:
+                         user.participant.department = group;
+                         print(user)
+                         print(user.participant.department)
+                         user.participant.save()
+            else:
+                None 
+        except: None
+        
+        #dgroup = dGroup.objects.get(id=group_id) 
+        #otheruser = User.objects.get(id=user_id)
+        #otheruser.participant.department = dgroup
+
+    return JsonResponse()
 
 
 from discourseAdmin.forms import UserForm
