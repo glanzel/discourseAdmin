@@ -19,7 +19,6 @@ from cProfile import label
 #     class Meta:
 #         ordering = ['-id']
 
-
 class dGroup(models.Model):
     
     name = models.CharField(max_length=255, null=True)

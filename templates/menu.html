@@ -17,6 +17,8 @@
                     <a href="{% url 'group-list' %}">{% trans 'Groups' %}</a>
                     <span>\</span>
                     <a href="{% url 'group-create' %}">{% trans 'Add Group' %}</a>
+                    <span>\\</span>
+                    <a href="/ua/easyaudit/crudevent">{% trans 'Audits' %}</a>
                 {% endif %}       
             
                 {% if user.is_active and user.is_superuser %}
@@ -28,8 +30,6 @@
                     <a href="/admin/auth/user">{% trans 'User-Admin' %}</a>
                     <span>\</span>
                     <a href="/admin/discourseAdmin/dgroup">{% trans 'Group-Admin' %}</a>
-                    <span>\\</span>
-                    <a href="/admin/easyaudit/crudevent">{% trans 'Audits' %}</a>
                 {% endif %}
              
             </div>

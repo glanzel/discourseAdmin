@@ -35,11 +35,18 @@ def user_list(request, template='user/list.html'):
     d = {}
 
     d['user_list'] = User.objects.all().order_by('-date_joined', '-last_login')
+    tmp_admin_groups = User_Groups.objects.filter(user_id=request.user.id, rights = 1)
+    admin_groups = []
+    for ag in tmp_admin_groups: 
+        admin_groups.append(ag.group_id)
+    d['is_group_admin'] = admin_groups
+    print(d['is_group_admin'])
     if request.method == 'GET':
         filters = {}
         for key in request.GET:
             if request.GET[key] == 'True': filters[key] = True
             if request.GET[key] == 'False': filters[key] = False
+            if key == 'department' : filters['participant__department_id'] = request.GET[key]    
         d['user_list'] = d['user_list'].filter(**filters)
     return render(request, template, d)
 
@@ -115,7 +122,7 @@ def user_details(request, id, template='user/details.html'):
     d = {}
     item = get_object_or_404(User, pk=id)
     d['user_groups'] = item.dgroup_set.all()
- 
+    print(item.participant.department_id)
     d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1, user_groups__user_id=request.user.id).exclude(id__in=d['user_groups'])
 
     if request.user.is_superuser : 
