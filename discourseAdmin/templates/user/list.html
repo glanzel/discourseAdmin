@@ -3,7 +3,11 @@
 {% block page-title %}user{% endblock %}
 
 {% block content %}
-    <h4>user list</h4><br />
+    <h4>user list</h4> 
+    {% for key,value in request.GET.items %}
+    {{key}} : {{value}}<br>
+    {%endfor%}
+    <br />
     {% if user.participant.department != None %}
         <a href="{% url 'user-list' %}?department={{user.participant.department_id}}">{{user.participant.department}}</a>
     {% endif %} |

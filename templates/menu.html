@@ -12,7 +12,7 @@
                 <span class="menu_space" style="margin-left:40px">  </span>
             
                 {% if user.is_authenticated  %}
-                    <a href="{% url 'user-list' %}">{% trans 'Users' %}</a>
+                    <a href="{% url 'user-list' %}?department={{user.participant.department_id}}">{% trans 'Users' %}</a>
                     <span>\</span>
                     <a href="{% url 'group-list' %}">{% trans 'Groups' %}</a>
                     <span>\</span>
