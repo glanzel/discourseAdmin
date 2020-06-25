@@ -9,13 +9,19 @@
         <tr style="background-color: #DDD">
             <th style="padding: 10px;">ID</th>
             <th>Name</th>
+            <th>Members</th>
             <th>Action</th>
         </tr>
     {% for item in group_list %}
         <tr>
             <td style="padding: 10px;">{{ item.id }}</td>
             <td>{{ item }}</td>
-            <td><a href="{% url 'group-details' item.id %}">show</a></td>
+            <td>{{item.members.count}}</td>
+            <td><a href="{% url 'group-details' item.id %}">show</a>
+                {%if user.is_superuser or item.members.count < 2 %}
+                    <a href="{% url 'group-delete' item.id %}">delete</a>
+                {%endif%}                
+            </td>
         </tr>
     {% endfor %}
     </table>

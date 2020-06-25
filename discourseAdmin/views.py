@@ -164,6 +164,7 @@ def group_list(request, template='group/list.html'):
     return render(request, template, d)
 
 def group_create(request, template='group/create.html'):
+    #TODO: ersteller ist automatisch groupadmin ?
     d = {}
     d['form'] = GroupForm()
     if request.method == 'POST':
@@ -182,6 +183,13 @@ def group_create(request, template='group/create.html'):
             else:
                 item.discourse_group_id = groupDict['basic_group']['id']
                 item.save()
+                ug, create = User_Groups.objects.get_or_create(user_id=request.user.id, group_id = item.id)
+                ug.rights = 1
+                try: 
+                    client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
+                except: 
+                    ug.delete();
+                    messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht zu dieser Gruppe hinzugefügt werden')
                 print(groupDict)
                 return redirect('group-list')
         else:
@@ -212,8 +220,18 @@ def group_details(request, id, template='group/details.html'):
 @staff_member_required
 def group_delete(request, id):
     item = dGroup.objects.get(pk=id)
-    item.delete()
-    return JsonResponse()
+    if item.members.count() < 2 or request.user.is_superuser: 
+        client = Utils.getDiscourseClient()
+        try:
+            groupDict = client.delete_group(item.discourse_group_id)
+        except:
+            messages.error(request, item.name)
+            messages.error(request, ' Discourse Fehler: Die Gruppe kann nicht gelöscht werden. ')
+            messages.error(request, sys.exc_info()[1])
+            print("Error:", sys.exc_info()[0])
+        else:
+            item.delete()
+    return redirect('group-list')
 
 from discourseAdmin.models import User_Groups
 @staff_member_required
