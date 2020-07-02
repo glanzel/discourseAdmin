@@ -454,12 +454,16 @@ def change_user_password(request, user_id, template='user/change_user_password.h
     d['ignore_sso_link'] = 'change_password' 
     d['user_id'] = user_id;
     d['theuser'] = other_user = User.objects.get(id=user_id)
+    
+    print("theotheruser")
+    print(other_user)
+    print(user_id)
      
     if request.method == 'POST':
         ou_dep = other_user.participant.department
         u_dep = request.user.participant.department
         if ( request.user.is_staff and ((ou_dep is None) or (u_dep == ou_dep)) or request.user.is_superuser) :
-            Utils.change_password(request, request.user, request.POST['new_password'], request.POST['repeat_new_password'])
+            Utils.change_password(request, other_user, request.POST['new_password'], request.POST['repeat_new_password'])
         else:
             messages.error("keine Berechtigung")
             return redirect('user/'+other_user_id)
