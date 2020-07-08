@@ -17,7 +17,10 @@
             <td style="padding: 10px;">{{ item.id }}</td>
             <td>{{ item }}</td>
             <td>{{item.members.count}}</td>
-            <td><a href="{% url 'group-details' item.id %}">show</a>
+            <td>
+                {% if user.is_staff %}
+                <a href="{% url 'group-details' item.id %}">show</a>
+                {% endif %}
                 {%if user.is_superuser or item.members.count < 2 %}
                     <a href="{% url 'group-delete' item.id %}">delete</a>
                 {%endif%}                

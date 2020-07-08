@@ -3,15 +3,18 @@ from django.test import TestCase
 # Create your tests here.
 from django.contrib.auth.models import User
 from django.urls import reverse
+from discourseAdmin.models import User, dGroup
+from discourseAdmin.logic import Utils
 
-
-from discourseAdmin.models import User
 
 
 class UserTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create(username='test_user')
+        self.user = User.objects.create(username='test_user', is_active=True, is_staff=True)
+        self.user.set_password("test_password")
+        self.user.save()
+        logged_in = self.client.login(username='test_user', password="test_password")
 
     def tearDown(self):
         self.user.delete()
@@ -22,13 +25,15 @@ class UserTest(TestCase):
 
     def test_crud(self):
         # Create new instance
-        response = self.client.post(reverse('user-list'), {})
-        self.assertContains(response, '"success": true')
+        response = self.client.post(reverse('create-user'), {"username":'test_user_2', "password":"test_password_2"})
+        print(response)
+        #self.assertContains(response, '"success": true')
 
         # Read instance
         items = User.objects.all()
         self.failUnlessEqual(items.count(), 1)
         item = items[0]
+        print(item.__dict__)
         response = self.client.get(reverse('user-details', kwargs={'id': item.id}))
         self.failUnlessEqual(response.status_code, 200)
 
@@ -44,79 +49,50 @@ class UserTest(TestCase):
 
 
 
-from discourseAdmin.models import Groups
+from discourseAdmin.models import dGroup
 
 
 class GroupsTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create(username='test_user')
+        self.user = User.objects.create(username='test_user', is_active=True, is_staff=True)
+        self.user.set_password("test_password")
+        self.user.save()
+        logged_in = self.client.login(username='test_user', password="test_password")
 
     def tearDown(self):
         self.user.delete()
 
     def test_list(self):
-        response = self.client.get(reverse('groups-list'))
+        response = self.client.get(reverse('group-list'))
         self.failUnlessEqual(response.status_code, 200)
 
     def test_crud(self):
         # Create new instance
-        response = self.client.post(reverse('groups-list'), {})
-        self.assertContains(response, '"success": true')
+        print("start group-create")
+
+        #groupsDict = client.groups()
+        #print(groupsDict)
+        response = self.client.post(reverse('group-create'), {"name":"djangotestgruppe"})
+        #print(response)
+        #self.assertContains(response, '"success": true')
+
+        #Read from Discourse
+        client = Utils.getDiscourseClient()
+        try: discGroup = client.group("djantgotestgruppe")
+        except: self.fail("Gruppe ist nicht in Discourse angekommen")
+        else: print(discGroup)
 
         # Read instance
-        items = Groups.objects.all()
+        items = dGroup.objects.all()
         self.failUnlessEqual(items.count(), 1)
         item = items[0]
-        response = self.client.get(reverse('groups-details', kwargs={'id': item.id}))
+        response = self.client.get(reverse('group-details', kwargs={'id': item.id}))
         self.failUnlessEqual(response.status_code, 200)
-
-        # Update instance
-        response = self.client.post(reverse('groups-details', kwargs={'id': item.id}), {})
-        self.assertContains(response, '"success": true')
 
         # Delete instance
-        response = self.client.post(reverse('groups-delete', kwargs={'id': item.id}), {})
-        self.assertContains(response, '"success": true')
-        items = Groups.objects.all()
+        response = self.client.post(reverse('group-delete', kwargs={'id': item.id}), {})
+        items = dGroup.objects.all()
         self.failUnlessEqual(items.count(), 0)
 
-
-
-from discourseAdmin.models import User_Groups
-
-
-class User_GroupsTest(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create(username='test_user')
-
-    def tearDown(self):
-        self.user.delete()
-
-    def test_list(self):
-        response = self.client.get(reverse('user_groups-list'))
-        self.failUnlessEqual(response.status_code, 200)
-
-    def test_crud(self):
-        # Create new instance
-        response = self.client.post(reverse('user_groups-list'), {})
-        self.assertContains(response, '"success": true')
-
-        # Read instance
-        items = User_Groups.objects.all()
-        self.failUnlessEqual(items.count(), 1)
-        item = items[0]
-        response = self.client.get(reverse('user_groups-details', kwargs={'id': item.id}))
-        self.failUnlessEqual(response.status_code, 200)
-
-        # Update instance
-        response = self.client.post(reverse('user_groups-details', kwargs={'id': item.id}), {})
-        self.assertContains(response, '"success": true')
-
-        # Delete instance
-        response = self.client.post(reverse('user_groups-delete', kwargs={'id': item.id}), {})
-        self.assertContains(response, '"success": true')
-        items = User_Groups.objects.all()
-        self.failUnlessEqual(items.count(), 0)
 

@@ -16,6 +16,7 @@ urlpatterns = (
 
     path('user/', views.user_list, name='user'),
     path('user-list/', views.user_list, name='user-list'),
+    path('staff-list/', views.staff_list, name='staff-list'),
     path('user/<int:id>/', views.user_details, name='user-details'),
     path('user/<int:id>/delete/', views.user_delete, name='user-delete'),
     path('user/<int:id>/edit/', views.user_edit, name='user-edit'),
@@ -31,7 +32,10 @@ urlpatterns = (
 
     path('testisvaliduser', views.testisvaliduser, name='testisvaliduser'),
     path('login', views.login, name='login'),
+    path('logout', views.logout, name='logout'),
+    path('deactivate_inactives', views.deactivate_inactives, name='deactivate_inactives'),
     path('set_basic_group', views.set_basic_group, name='set_basic_group'),
+    
     
 
     path('user/<int:user_id>/change_password', views.change_user_password, name='change_user_password'),

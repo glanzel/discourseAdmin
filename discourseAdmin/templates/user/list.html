@@ -39,16 +39,19 @@
                 no
             {% endif %}
             </td>
-            <td><a href="{% url 'user-details' item.id %}">show</a>
-            {% if item.is_active %}
-                <a href="{% url 'deactivate_user' item.id %}">deactivate</a>
-            {% else %}
-                <a href="{% url 'activate_user' item.id %}">activate</a>
-            {% endif %}
-            {% if item.participant.department_id in is_group_admin %}
-                <a href="{% url 'change_user_password' item.id %}">changePass</a>
-            {% endif %}
-   
+            <td>
+            {% if user.is_staff %}   
+                
+                <a href="{% url 'user-details' item.id %}">show</a>
+                {% if item.is_active %}
+                    <a href="{% url 'deactivate_user' item.id %}">deactivate</a>
+                {% else %}
+                    <a href="{% url 'activate_user' item.id %}">activate</a>
+                {% endif %}
+                {% if item.participant.department_id in is_group_admin %}
+                    <a href="{% url 'change_user_password' item.id %}">changePass</a>
+                {% endif %}
+            {%endif%}
                 
                 
             </td>

@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
+from django.db.models import Q
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -22,15 +23,23 @@ from discourseAdmin.forms import UserForm, LoginForm, ChangePasswordForm
 from discourseAdmin.logic import Utils
 
 from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
+from datetime import date
 
 #from doctest import DebugRunner #wird das benutzt ?
 #from pip._vendor.colorama.ansi import Fore # was macht das ?
 #from lib2to3.pgen2.tokenize import group # wo kommt das her ?
 #from __builtin__ import True # und was soll das  ?
 
-sso_links = {'anmeldung':'Login:Discourse', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'user-list':'Login:Adminbereich'}
+sso_links = {'anmeldung':'Login:Discourse', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'login':'Login:Adminbereich'}
 
-@staff_member_required
+
+def staff_list(request, template='user/list.html'):
+    d = {}
+    d['user_list'] = User.objects.all().filter(is_staff=True).order_by('participant__department_id', 'username')
+    return render(request, template, d)
+
+
+@login_required
 def user_list(request, template='user/list.html'):
     d = {}
 
@@ -157,21 +166,23 @@ def user_delete(request, id):
 
 from discourseAdmin.models import dGroup
 from discourseAdmin.forms import GroupForm
-@staff_member_required
+@login_required
 def group_list(request, template='group/list.html'):
     d = {}
     d['group_list'] = dGroup.objects.all()
     return render(request, template, d)
 
+@staff_member_required
 def group_create(request, template='group/create.html'):
     #TODO: ersteller ist automatisch groupadmin ?
     d = {}
     d['form'] = GroupForm()
+    #print("group_create")
     if request.method == 'POST':
         form = GroupForm(request.POST)
         if form.is_valid():
             item = form.save()
-            #print(item)
+            #print(item.__dict__)
             client = Utils.getDiscourseClient()
             try:
                 groupDict = client.create_group(name=item.name)
@@ -239,6 +250,7 @@ def activate_user(request, user_id):
     #TODO: check authorisation ? Nö darf jede aus dem Staff
     user = User.objects.get(id=user_id)
     user.is_active = True
+    user.last_login = datetime.datetime.now()
     user.save()
     print(user.__dict__)
     
@@ -248,7 +260,8 @@ def activate_user(request, user_id):
         client = Utils.getDiscourseClient()
         dUser = client.user(username=user.username)
         print(dUser['id'])
-    except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
+    except: 
+        print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
     try: client.activate(dUser['id'])
     except: print("scheinbar bereits aktiviert")
     try: client.unsuspend(dUser['id'])
@@ -257,7 +270,7 @@ def activate_user(request, user_id):
     return redirect('user-list')
 
 @staff_member_required
-def deactivate_user(request, user_id):
+def deactivate_user(request, user_id, info=None):
     #TODO: check authorisation ? Nö darf jede aus dem Staff
     user = User.objects.get(id=user_id)
     user.is_active = False
@@ -266,14 +279,15 @@ def deactivate_user(request, user_id):
     try:
         client = Utils.getDiscourseClient()
         dUser = client.user(username=user.username)
-        client.deactivate(dUser['id'])
-        client.suspend(dUser['id'],365000,"Gesperrt von user "+request.user.username)
-    except: print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
-    try: client.deactivate(dUser['id'])
-    except: print("scheinbar nicht aktiviert")
-    try:         client.suspend(dUser['id'],365000,"Gesperrt von user "+request.user.username)
-    except: print("scheinbar bereits gesperrt")
-
+    except: 
+        print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
+    else:
+        try: client.deactivate(dUser['id'])
+        except: print("scheinbar nicht aktiviert")
+        try:
+            if info is None : info = "Gesperrt von user "+request.user.username
+            client.suspend(dUser['id'],365000,info)
+        except: print("scheinbar bereits gesperrt")
     return redirect('user-list')
 
 
@@ -489,10 +503,10 @@ def create_user(request, template='user/create.html'):
                 item = form.save()
                 item.set_password(item.password)
                 Utils.create_discourse_user(item)
-                basicgroup = Utils.get_or_create_basic_group(groupname)
+                basicgroup = Utils.get_or_create_basic_group()
                 basicgroup.user_set.add(item)
                 messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
-            #return redirect('http://localhost:3000')
+                return redirect('/')
         else:
             messages.error(request, 'Das hat nicht geklappt. Dein Account wurde nicht angelegt.')
             d['form'] = form
@@ -509,6 +523,7 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def login(request, template='user/login.html'):
     d =  {}
+    d['sso_links'] = sso_links
     d['form'] = LoginForm()
     if request.method == 'POST':
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
@@ -516,8 +531,10 @@ def login(request, template='user/login.html'):
         return redirect('ua/easyaudit/crudevent/')
     return render(request, template, d)
         
-
-
+@csrf_exempt
+def logout(request):
+    auth.logout(request)        
+    return redirect('/')
 
 @csrf_exempt
 def discourse_sso(request, template='user/sso_login.html'):
@@ -552,13 +569,15 @@ def discourse_sso(request, template='user/sso_login.html'):
         # wenn Benutzer valide sso validierung mit gruppen ausliefern  
         if user is not None:
             print("User ist vorhanden")
+            user.last_login = datetime.datetime.now()
+            user.save()
             Utils.watchImportantTopic(request, user.username)
             #print(user.__dict__)
             #groups = user.dgroup_set.all()
             #groupstr = ', '.join(map(str, list(groups)))
 #             if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
 #                  user.email = '%s@%s' % (user.id, settings.DISCOURSE_INTERN_SSO_EMAIL) 
-            print(user.__dict__)
+            #print(user.__dict__)
             nonce = sso.sso_validate(payload, signature, settings.DISCOURSE_SSO_KEY)
             url = sso.sso_redirect_url(nonce, settings.DISCOURSE_SSO_KEY, user.email, user.participant.id, user.username) #, add_groups=groupstr, groups=groupstr)
             return redirect(settings.DISCOURSE_BASE_URL + url)
@@ -569,7 +588,22 @@ def discourse_sso(request, template='user/sso_login.html'):
     return render(request, template, d)
     #return redirect('http://discuss.example.com' + url)
 
+# 
+def deactivate_inactives(request):
+    if(hasattr(settings, 'DEACTIVATE_INACTIVE_AFTER_DAYS')):
+        heute = datetime.datetime.now()
+        print(heute)
+        tag_x = heute - datetime.timedelta(days=settings.DEACTIVATE_INACTIVE_AFTER_DAYS)
+        print(tag_x)
+        users = User.objects.all().filter(date_joined__lte = tag_x, is_active=True).filter(Q(last_login__lte = tag_x) | Q(last_login = None));
+        print(users)
+        for user in users:
+            print(user)
+            #TODO: hier muss deaktiviert werden
+            deactivate_user(request,user.id, "Automatisch gesperrt wegen Inaktivität ("+ str(settings.DEACTIVATE_INACTIVE_AFTER_DAYS)+ " Tage)")
+    return JsonResponse()
 
+# migration methode only
 @staff_member_required    
 def set_basic_group(request):
     basicgroup = Utils.get_or_create_basic_group()

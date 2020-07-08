@@ -16,7 +16,9 @@
                     <span>\</span>
                     <a href="{% url 'group-list' %}">{% trans 'Groups' %}</a>
                     <span>\</span>
+                    {% if user.is_staff %}
                     <a href="{% url 'group-create' %}">{% trans 'Add Group' %}</a>
+                    {% endif %}
                     <span>\\</span>
                     <a href="/ua/easyaudit/crudevent">{% trans 'Audits' %}</a>
                 {% endif %}       

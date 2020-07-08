@@ -50,7 +50,7 @@ class Participant(models.Model):
     #groups = models.ManyToManyField(Group, through='User_Groups', related_name="groups")
 
     def __str__(self):
-        return "test2" #self.discourse_user+" "
+        return self.discourse_user+" "
 
 from django.contrib.auth.models import User
 

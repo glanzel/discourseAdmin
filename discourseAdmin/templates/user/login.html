@@ -5,7 +5,7 @@
 {% block form %}
 
     <span class="login100-form-title p-b-41">
-        Login
+        Login:Adminbereich
     </span>
     <form action="{% url 'login' %}" method="POST" id="add-form" class="login100-form validate-form p-b-33 p-t-5">                     <div id="feedback"></div>
 
@@ -25,7 +25,7 @@
             </button>
         </div>
 
-        {% include "user/sso_links.html" with ignore_sso_link="discourse_sso" %}
+        {% include "user/sso_links.html" with ignore_sso_link="login" %}
 
     </form>
 

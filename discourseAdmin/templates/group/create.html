@@ -4,10 +4,11 @@
 {% block page-title %}group{% endblock %}
 
 {% block content %}
+    <h3>Gruppe erstellen</h3>
     <br />
     <div id="add-form-div" >
         <form action="{% url 'group-create' %}" method="POST" id="add-form">
-                <div id="form-fields" class="wide aligned module">
+                <div id="form-fields" class="aligned module">
                     {% csrf_token %}
                     {{ form.as_p }}
                 </div>
