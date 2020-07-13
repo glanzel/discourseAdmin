@@ -41,7 +41,10 @@ DATABASES = {
     }
 }
 
-LOG_DIR = "/var/log/dsso"
+LOG_DIR = "."
+# RECOMENDED: choose another log diretory, but make sure that your dir existis bevor
+#LOG_DIR = "/var/log/discoursAdmin"
+
 
 LOGGING = {
     'version': 1,
