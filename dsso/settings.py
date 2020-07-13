@@ -139,6 +139,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOG_DIR = "."
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -146,4 +147,52 @@ USE_TZ = True
 STATIC_URL = '/dastatic/'
 
 from .settings_local import *
+
+# At the End so you have the ability to overwrite the log dir in local_settings
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default':{
+            'format': '{levelname} {asctime} {module}:{lineno} {message}',
+            'style': '{',
+        },
+        'simple':{
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+        'time':{
+            'format': '{asctime} {message}',
+            'style': '{',
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default'
+        },
+        'file': {
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR + "/dsso.log",        
+            'formatter': 'default'
+        },
+        'deactivate_inactive':{
+            'formatter': 'time',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR + "/deactivate_inactive.log",        
+        }
+    },
+    'loggers':{
+        '': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
+        'views.deactivate_inactive':{
+            'handlers':['deactivate_inactive'],
+            'level': 'INFO',
+            'propagate': False,
+        }
+    },
+}
+
 

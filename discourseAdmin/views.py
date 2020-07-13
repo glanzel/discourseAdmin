@@ -32,16 +32,21 @@ from datetime import date
 
 sso_links = {'anmeldung':'Login:Discourse', 'create_user':'Registrieren', 'change_password':'Passwort ändern', 'login':'Login:Adminbereich'}
 
+logger = logging.getLogger(__name__)
 
-def staff_list(request, template='user/list.html'):
+@login_required
+def staff_list(request, title='OG Admin Liste', template='user/list.html'):
     d = {}
+    d['title'] = title
     d['user_list'] = User.objects.all().filter(is_staff=True).order_by('participant__department_id', 'username')
     return render(request, template, d)
 
 
 @login_required
-def user_list(request, template='user/list.html'):
+def user_list(request, title='Benutzerliste', template='user/list.html'):
     d = {}
+    d['title'] = title
+    logger.info("this is user-list")
 
     d['user_list'] = User.objects.all().order_by('-date_joined', '-last_login')
     tmp_admin_groups = User_Groups.objects.filter(user_id=request.user.id, rights = 1)
@@ -527,12 +532,17 @@ def login(request, template='user/login.html'):
     d['form'] = LoginForm()
     if request.method == 'POST':
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-        if user is not None: auth.login(request, user)        
-        return redirect('ua/easyaudit/crudevent/')
+        if user is not None: 
+            auth.login(request, user)        
+            return redirect('staff-list')
+            messages.info(request, 'Erfolgreich eingeloggt.')
+        else:
+            messages.error(request, 'Das hat nicht geklappt: Benutzername oder Passwort ist falsch oder dein Account ist nicht freigeschaltet.')
     return render(request, template, d)
         
 @csrf_exempt
 def logout(request):
+    deactivate_inactives(request)
     auth.logout(request)        
     return redirect('/')
 
@@ -588,18 +598,19 @@ def discourse_sso(request, template='user/sso_login.html'):
     return render(request, template, d)
     #return redirect('http://discuss.example.com' + url)
 
-# 
+# deaktiviert bei logout automatisch inaktive benutzer wenn settings.DEACTIVATE_INACTIVE_AFTER_DAYS gesetz ist
+# sonst passiert gar nichts
+# kann von cronjob aufgerufen werden
+di_logger = logging.getLogger('views.deactivate_inactive')
 def deactivate_inactives(request):
     if(hasattr(settings, 'DEACTIVATE_INACTIVE_AFTER_DAYS')):
+        logger.info("check deactivate_inactive")
         heute = datetime.datetime.now()
-        print(heute)
         tag_x = heute - datetime.timedelta(days=settings.DEACTIVATE_INACTIVE_AFTER_DAYS)
-        print(tag_x)
         users = User.objects.all().filter(date_joined__lte = tag_x, is_active=True).filter(Q(last_login__lte = tag_x) | Q(last_login = None));
-        print(users)
         for user in users:
-            print(user)
-            #TODO: hier muss deaktiviert werden
+            #hier wird deaktiviert.
+            di_logger.info("deaktiviere "+user.username+" wegen inaktivität")
             deactivate_user(request,user.id, "Automatisch gesperrt wegen Inaktivität ("+ str(settings.DEACTIVATE_INACTIVE_AFTER_DAYS)+ " Tage)")
     return JsonResponse()
 
@@ -608,7 +619,8 @@ def deactivate_inactives(request):
 def set_basic_group(request):
     basicgroup = Utils.get_or_create_basic_group()
     print(basicgroup);
-    users = User.objects.all();
+    users = User.objects.all().exclude(groups__id=1)
+    print(users);
     for user in users:
         basicgroup.user_set.add(user)
     return JsonResponse()

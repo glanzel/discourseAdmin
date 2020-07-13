@@ -25,13 +25,13 @@ class UserTest(TestCase):
 
     def test_crud(self):
         # Create new instance
-        response = self.client.post(reverse('create-user'), {"username":'test_user_2', "password":"test_password_2"})
+        response = self.client.post(reverse('create_user'), {"username":'test_user_2', "password":"test_password_2"})
+        self.failUnlessEqual(response.status_code, 200)
         print(response)
-        #self.assertContains(response, '"success": true')
 
         # Read instance
         items = User.objects.all()
-        self.failUnlessEqual(items.count(), 1)
+        self.failUnlessEqual(items.count(), 2)
         item = items[0]
         print(item.__dict__)
         response = self.client.get(reverse('user-details', kwargs={'id': item.id}))
@@ -73,15 +73,19 @@ class GroupsTest(TestCase):
 
         #groupsDict = client.groups()
         #print(groupsDict)
-        response = self.client.post(reverse('group-create'), {"name":"djangotestgruppe"})
+        response = self.client.post(reverse('group-create'), {"name":"djangotest"})
         #print(response)
         #self.assertContains(response, '"success": true')
 
         #Read from Discourse
         client = Utils.getDiscourseClient()
-        try: discGroup = client.group("djantgotestgruppe")
+        try: 
+            discGroups = client.groups()
+            assertCG = False;
+            for group in discGroups:
+                if group['name'] == "djangotest": assertCG = True
+            self.assertTrue(assertCG)
         except: self.fail("Gruppe ist nicht in Discourse angekommen")
-        else: print(discGroup)
 
         # Read instance
         items = dGroup.objects.all()
