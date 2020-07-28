@@ -179,7 +179,7 @@ class Utils:
                 user.set_password(new_password)
                 user.last_name = user.last_name+"_cp";
                 user.save()
-                print("change_password : Passwort geändert von :")
+                print("change_password :  Passwort geändert von :")
                 print(user)
                 messages.success(request, 'Password wurde erfolgreich geändert ')
         else:
@@ -198,6 +198,8 @@ class Utils:
                     for topic_id in settings.DISCOURSE_FORCE_TOPIC[group_id]:
                         try: client.watch_topic(topic_id, accountname, notification_level=3)
                         except: print("EXCEPTION für "+topic_id)
+                        try: client.watch_category(topic_id, accountname)
+                        except: print("CATEGORY EXCEPTION für "+topic_id)
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ DISCOURSE_BASE_URL = 'http://localhost:3000'
 
 PHP_LOGIN_CHECK_URI = None
 PHP_LOGIN_CHECK_AUTH = None
-#DEACTIVATE_INACTIVE_AFTER_DAYS = 365 #uncomment and call url/deactivate_inactive per cronjob  Zeit in Tagen
+#DEACTIVATE_INACTIVE_AFTER_DAYS = 365 #uncomment get automatic called at logout or call url/deactivate_inactive per cronjob  Zeit in Tagen
 
 # Format: Mitglieder der Gruppen gruppen_id werden gezwungen die topic_ids anzugucken {"gruppen_id":  ['topic_id1', 'topic2']}
 #DISCOURSE_FORCE_TOPIC = {1: ["1", "5", "6"], 2: ["5", "3", "4"]} 

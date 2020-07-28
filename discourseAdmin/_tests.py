@@ -7,7 +7,7 @@ from discourseAdmin.models import User, dGroup
 from discourseAdmin.logic import Utils
 
 
-
+# erstmal umbenannt so das es nicht automatisch aufgerufen wird
 class UserTest(TestCase):
 
     def setUp(self):
