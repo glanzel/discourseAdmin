@@ -1,35 +1,3 @@
-
-Skip to content
-Pull requests
-Issues
-Marketplace
-Explore
-@glanzel
-glanzel /
-discourseAdmin
-
-2
-0
-
-    0
-
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-
-    Settings
-
-discourseAdmin/dsso/settings_local.py.template
-grischan testing
-Latest commit 210d088 10 hours ago
-History
-1 contributor
-94 lines (80 sloc) 2.45 KB
 import os
 
 # SECURITY WARNING: keep the secret key used in production secret!
