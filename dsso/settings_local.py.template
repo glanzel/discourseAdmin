@@ -32,14 +32,24 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': '/var/www/dsso/dsso/django_my.cnf',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase',
     }
 }
+
+# recommend: use a real databases
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.mysql',
+#        'OPTIONS': {
+#            'read_default_file': '/var/www/dsso/dsso/django_my.cnf',
+#        },
+#    }
+#}
 
 LOG_DIR = "."
 # RECOMENDED: choose another log diretory, but make sure that your dir existis bevor
