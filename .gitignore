@@ -1,0 +1,6 @@
+.gitignore
+/dsso/settings_local.py
+/dsso/django_my.cnf
+/dsso/__pycache__/*
+/discourseAdmin/__pycache__/*
+/dastatic/*
