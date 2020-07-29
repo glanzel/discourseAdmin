@@ -22,9 +22,10 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     - name: Set up Python
-    uses: actions/setup-python@v2
-    with:
-      python-version: '3.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+    - run: pip3 install -r requirements.txt -f .
     - run: python3 manage.py test
     # Runs a single command using the runners shell
     - name: Run a one-line script
