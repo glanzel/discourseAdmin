@@ -26,7 +26,7 @@ jobs:
       with:
         python-version: '3.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
     - run: pip3 install -r requirements.txt -f .
-    - cp: dsso/settings_local.py.template dsso/settings_local.py
+    - run: cp dsso/settings_local.py.template dsso/settings_local.py
     - run: python3 manage.py test
     # Runs a single command using the runners shell
     - name: Run a one-line script
