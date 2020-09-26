@@ -8,9 +8,11 @@ from django.conf import settings
 
 #from django.contrib import auth
 from django.contrib.auth import password_validation
+from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User, Group
+
 from django.contrib import messages
 from django.db.models import Q
 
@@ -41,7 +43,7 @@ def staff_list(request, title='OG Admin Liste', template='user/list.html'):
 def user_list(request, title='Benutzerliste', template='user/list.html'):
     d = {}
     d['title'] = title
-    logger.debug("this is user-list")
+    #logger.debug("this is user-list")
 
     d['user_list'] = User.objects.all().order_by('-date_joined', '-last_login')
     tmp_admin_groups = User_Groups.objects.filter(user_id=request.user.id, rights = 1)
@@ -49,7 +51,7 @@ def user_list(request, title='Benutzerliste', template='user/list.html'):
     for ag in tmp_admin_groups: 
         admin_groups.append(ag.group_id)
     d['is_group_admin'] = admin_groups
-    print(d['is_group_admin'])
+    #print(d['is_group_admin'])
     if request.method == 'GET':
         filters = {}
         for key in request.GET:
@@ -132,9 +134,11 @@ def change_password(request, template='user/change_password.html'):
         if not request.user.is_authenticated:
             user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
             if user is None:
-                messages.error(request, 'Fehler: Deine Zugangsdaten sind falsch. Entweder exitiert der Benutzer nicht oder das Passwort ist falsch.')
+                logger.info("User "+request.POST['username']+" kann Passwort nicht ändern:  Entweder exitiert der Benutzer nicht oder das alte Passwort ist falsch")
+                messages.error(request, 'Fehler: Deine Zugangsdaten sind falsch. Entweder exitiert der Benutzer nicht oder das alte Passwort ist falsch.')
                 return render(request, template, d)
         else: user = request.user
+ 
         Utils.change_password(request, user, request.POST['new_password'], request.POST['repeat_new_password'])
     return render(request, template, d)
 
@@ -182,6 +186,7 @@ def create_user(request, template='user/create.html'):
                 Utils.create_discourse_user(item)
                 basicgroup = Utils.get_or_create_basic_group()
                 basicgroup.user_set.add(item)
+                logger.info("User "+item.username+" wurde erfolgreich angelegt.")
                 messages.success(request, 'Dein Account wurde erfolgreich angelegt. Er muss nun freigeschaltet werden. Dann kannst du dich einloggen.')
                 return redirect('/')
         else:
@@ -210,9 +215,14 @@ def activate_user(request, user_id):
         dUser = client.user(username=user.username)
         print(dUser['id'])
     except: 
-        print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
+        messages.error(request, "Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein, ist jetzt nur im backend aktiviert")
+        print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein, ist jetzt nur im backend aktiviert")
+        return redirect('user-list')
+    
     try: client.activate(dUser['id'])
-    except: print("scheinbar bereits aktiviert")
+    except: 
+        messages.error(request, "Der Benutzer "+user.username+" scheinbar bereits aktiviert ?.")
+        print("scheinbar bereits aktiviert")
     try: client.unsuspend(dUser['id'])
     except: print("scheinbar nicht gesperrt")
 
@@ -229,6 +239,7 @@ def deactivate_user(request, user_id, info=None):
         client = Utils.getDiscourseClient()
         dUser = client.user(username=user.username)
     except: 
+        messages.error(request, "Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein, ist jetzt nur im backend deaktiviert")
         print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")
     else:
         try: client.deactivate(dUser['id'])

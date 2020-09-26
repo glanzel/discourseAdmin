@@ -1,4 +1,5 @@
 from sys import argv
+import logging
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -13,6 +14,9 @@ from gydiscourse.pydiscourse.client import DiscourseClient
 from discourseAdmin.models import User_Groups, Participant, User
 
 from dsso.settings_local import PHP_LOGIN_CHECK_URI, PHP_LOGIN_CHECK_AUTH
+
+logger = logging.getLogger(__name__)
+
 
 class Utils:
 
@@ -38,11 +42,7 @@ class Utils:
             result = requests.post(PHP_LOGIN_CHECK_URI, data=post_data, auth=basic_auth, verify=False)
             return result.status_code >= 200 and result.status_code < 300
         else:
-            print("Try to login "+username+" by debug password")
-            if password == "1wgtbgeheimnis" :
-                return True
-            else:
-                return False
+            return False
 
     @staticmethod
     def migrateUser(username,password):
@@ -177,10 +177,10 @@ class Utils:
                     messages.error(request, err)                
             else:
                 user.set_password(new_password)
-                user.last_name = user.last_name+"_cp";
+                #user.last_name = user.last_name+"_cp";
                 user.save()
-                print("change_password :  Passwort geändert von :")
-                print(user)
+                logger.info("change_password :  Passwort geändert von :")
+                logger.info(user)
                 messages.success(request, 'Password wurde erfolgreich geändert ')
         else:
             messages.error(request, 'Fehler: Deine neuen Passwörter stimmen nicht überein.')

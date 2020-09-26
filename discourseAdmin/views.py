@@ -18,12 +18,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.middleware.csrf import get_token
 
-from discourseAdmin.models import Participant, User, dGroup
+from discourseAdmin.models import Participant, User, dGroup, User_Groups
 from discourseAdmin.forms import UserForm, LoginForm, ChangePasswordForm, GroupForm
 from discourseAdmin.logic import Utils
 
 from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
 from datetime import date
+from _ast import If
+from django.utils import safestring
 
 #from doctest import DebugRunner #wird das benutzt ?
 #from pip._vendor.colorama.ansi import Fore # was macht das ?
@@ -117,24 +119,15 @@ def group_delete(request, id):
 @staff_member_required
 def add_user_to_group(request, user_id, group_id):
     if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser: 
+        #messages.error(request, 'Alles okay')
         ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
         client = Utils.getDiscourseClient()
         try: client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
-        except: 
+        except Exception as err: 
             ug.delete();
-            messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht zu dieser Gruppe hinzugefügt werden')
+            messages.error(request, safestring.mark_safe('Benutzer kann nicht zu dieser Gruppe hinzugefügt werden. Grund: <br> '+format(err)))
     return redirect('user-details', id=user_id)
 
-@staff_member_required
-def add_user_to_group(request, user_id, group_id):
-    if (User_Groups.isGroupAdmin(user_id=request.user.id, group_id = group_id)) or request.user.is_superuser: 
-        ug, create = User_Groups.objects.get_or_create(user_id=user_id, group_id = group_id)
-        client = Utils.getDiscourseClient()
-        try: client.add_user_to_group(ug.group.discourse_group_id,ug.user.participant.discourse_user)
-        except: 
-            ug.delete();
-            messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht zu dieser Gruppe hinzugefügt werden')
-    return redirect('user-details', id=user_id)
 
 @staff_member_required
 def delete_user_from_group(request, user_id, group_id):
@@ -142,7 +135,7 @@ def delete_user_from_group(request, user_id, group_id):
         ug = User_Groups.objects. get(user_id=user_id, group_id = group_id)
         client = Utils.getDiscourseClient()
         try: client.delete_group_member(ug.group.discourse_group_id,ug.user.participant.discourse_user)
-        except: messages.error(request, 'Das hat nicht geklappt: Benutzer kann nicht von dieser Gruppe gelöscht werden')
+        except Exception as err: messages.error(request, safestring.mark_safe('Benutzer kann nicht von dieser Gruppe gelöscht werden.  Grund: <br/> '+format(err)))
         else: ug.delete()
 
     return redirect('user-details', id=user_id)
@@ -185,7 +178,7 @@ def logout(request):
 
 @csrf_exempt
 def discourse_sso(request, template='user/sso_login.html'):
-    print("discourse_sso")
+    #print("discourse_sso")
 
     d = {}
     d['sso_links'] = sso_links
@@ -203,19 +196,27 @@ def discourse_sso(request, template='user/sso_login.html'):
     
     d['form'] = LoginForm()
     if request.method == 'POST':
-        print("post anfrage")
+        #print("post anfrage")
         #print(request.POST['username'])
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
  
         # checken ob stattdessen ein Php Benutzer besteht
-        if user is None:
-            print("User is not authenticated by python try php")
-            if Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']):
-                user = Utils.migrateUser(username=request.POST['username'], password=request.POST['password'])
-        
+        if hasattr(settings, 'PHP_LOGIN_CHECK_URI'):
+            if User.objects.filter(username=request.POST['username']).exists():  
+                the_user = User.objects.get(username=request.POST['username'])
+                last_login = the_user.last_login
+            else:     
+                last_login = None
+
+            if last_login is None: #nur einmal migrieren
+                if user is None:
+                    logger.info("User "+request.POST['username']+" is not authenticated by python try php")
+                    if Utils.isValidPhpUser(username=request.POST['username'], password=request.POST['password']):
+                        user = Utils.migrateUser(username=request.POST['username'], password=request.POST['password'])
+    
         # wenn Benutzer valide sso validierung mit gruppen ausliefern  
         if user is not None:
-            print("User ist vorhanden")
+            #print("User ist vorhanden")
             user.last_login = datetime.datetime.now()
             user.save()
             Utils.watchImportantTopic(request, user.username)
