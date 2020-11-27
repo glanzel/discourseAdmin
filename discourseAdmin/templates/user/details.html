@@ -4,6 +4,9 @@
 {% block page-title %}user - {{ other_user }} {% endblock %}
 
 {% block content %}
+    
+    
+
     <div class="item">
         <h1>user - {{ other_user }} </h1><br />
         <table style="border: solid 1px gray; width: 300px; " id="item-list">
@@ -23,6 +26,17 @@
                 -->
             </tr>
         </table>
+        <br />
+        <div class="discourse_connection">
+        {% if dUser_exists %} 
+        Verbindung zu discourse scheint okay zu sein.<br> 
+        {%else%}
+        <b style="color:red"> Warnung: Benutzer existiert in Discourse scheinbar nicht!</b><br>
+        <a href="{% url 'create_discourse_user' other_user.id  %}">Benutzer neu in discourse erstellen</a>
+        
+        {%endif%}
+        </div>
+
         <br />
         <b>Hauptgruppe</b><br>
             <a href="{% url 'unset_department' other_user.id  %}">{{ other_user.participant.department }}</a>

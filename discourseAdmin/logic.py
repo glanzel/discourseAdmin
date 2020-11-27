@@ -44,6 +44,7 @@ class Utils:
         else:
             return False
 
+
     @staticmethod
     def migrateUser(username,password):
         print("Utils.migrateUser")

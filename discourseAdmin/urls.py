@@ -22,6 +22,7 @@ urlpatterns = (
     path('user/<int:id>/delete/', user.user_delete, name='user-delete'),
     path('user/<int:id>/edit/', user.user_edit, name='user-edit'),
 
+    path('user/<int:user_id>/create_discourse_user', user.create_discourse_user, name='create_discourse_user'),
     path('user/<int:user_id>/activate', user.activate_user, name='activate_user'),
     path('user/<int:user_id>/deactivate', user.deactivate_user, name='deactivate_user'),
     path('create_user', user.create_user, name='create_user'),

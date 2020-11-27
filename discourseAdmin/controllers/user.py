@@ -90,7 +90,6 @@ def user_details(request, id, template='user/details.html'):
     d = {}
     item = get_object_or_404(User, pk=id)
     d['user_groups'] = item.dgroup_set.all()
-    print(item.participant.department_id)
     d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1, user_groups__user_id=request.user.id).exclude(id__in=d['user_groups'])
 
     if request.user.is_superuser : 
@@ -114,6 +113,20 @@ def user_details(request, id, template='user/details.html'):
             d['form'] = form
             return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
     d['other_user'] = User.objects.get(pk=id)
+    
+    # check connection to discourse
+    client = Utils.getDiscourseClient()
+    try: dUser = client.user(item.username)
+    except: 
+        d['dUser_exists'] = False
+    else:
+    #repair loss off Participant if everything else is correct     
+        try: p = item.participant
+        except:
+            p = Participant(user = item, discourse_user=dUser['id'])
+            p.save();
+        d['dUser_exists'] = True
+        
     return render(request, template, d)
 
 @staff_member_required
@@ -197,6 +210,24 @@ def create_user(request, template='user/create.html'):
     d['user_list'] = User.objects.all()
     return render(request, template, d)
     #return JsonResponse()
+
+@staff_member_required
+def create_discourse_user(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    try: p = user.participant
+    except: logger.info("User "+user.username+" wird wird in discourse neu angelegt.  Er scheint vorher nicht dort existiert zu haben kein Participatn gefunden.")
+    else: 
+        client = Utils.getDiscourseClient()
+        try: userDetails = client.user_all(user_id=p.user_id)
+        except: 
+            logger.info("User "+user.username+" wird wird in discourse neu angelegt.  Participant existierte zwar, er scheint aber trotzdem nicht in discourse zu existieren.")
+            user.participant.delete()
+        else:
+            messages.error(request, 'Der Benutzer scheint doch zu existieren. Die Verbindung zu Discourse besteht bereits, der Benutzer existiert auch dort. Es scheint eine andere Fehler vorzuliegen. Wende dich bitte an einen Admin und poste diesen Text.')
+    Utils.create_discourse_user(user)
+    basicgroup = Utils.get_or_create_basic_group()
+    basicgroup.user_set.add(user)
+    return redirect('user-details', id=user_id)
 
 from discourseAdmin.models import User_Groups
 @staff_member_required
