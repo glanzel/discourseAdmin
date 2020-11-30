@@ -219,7 +219,7 @@ def create_discourse_user(request, user_id):
             logger.info("User "+user.username+" wird wird in discourse neu angelegt.  Participant existierte zwar, er scheint aber trotzdem nicht in discourse zu existieren.")
             user.participant.delete()
         else:
-            messages.error(request, "Der Benutzer "+user.username+" scheint doch zu existieren. Die Verbindung zu Discourse besteht bereits, der Benutzer existiert auch dort. Es scheint eine anderer Fehler vorzuliegen. Wende dich bitte an einen Admin und poste diesen Text.')
+            messages.error(request, "Der Benutzer "+user.username+" scheint doch zu existieren. (discourse.id:"+p.discourse_user+" da.id:"+ +" user_id) Die Verbindung zu Discourse besteht bereits, der Benutzer existiert auch dort. Es scheint eine anderer Fehler vorzuliegen. Wende dich bitte an einen Admin und poste diesen Text.")
             return redirect('user-details', id=user_id)
     Utils.create_discourse_user(user)
     basicgroup = Utils.get_or_create_basic_group()
