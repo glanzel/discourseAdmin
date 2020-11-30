@@ -71,15 +71,15 @@ class Utils:
  
         # check if discourse user already exists - mach das sinn ?
         try: dUser = client.user(username=user.username)
-        except: logger.info("")
-        else: 
-            print( dUser['id'])
+        except: logger.info("es existiert kein discourse Benutzer "+ user.username)
+        else:
+            print(dUser['id'])
             try: 
                 p = user.participant
-                discourse_user=dUser['id']
+                p.discourse_user=dUser['id']
             except: p = Participant(user = user, discourse_user=dUser['id'])
             p.save();
-            logger.info("Benutzer*in "+user.username+" scheint bereits in Discourse zu existieren")
+            logger.info("Benutzer*in "+user.username+" scheint bereits in Discourse zu existieren. versuche nur die verbinung neu zu erstellen.")
             return
 
         if active != True : user.is_active = False
