@@ -88,7 +88,7 @@ from discourseAdmin.forms import HasDiscoGroups
 @staff_member_required
 def user_details(request, id, template='user/details.html'):
     d = {}
-    item = get_object_or_404(User, pk=id)
+    user = item = get_object_or_404(User, pk=id)
     d['user_groups'] = item.dgroup_set.all()
     d['admin_groups'] = dGroup.objects.all().filter(user_groups__rights=1, user_groups__user_id=request.user.id).exclude(id__in=d['user_groups'])
 
@@ -98,7 +98,6 @@ def user_details(request, id, template='user/details.html'):
         d['all_groups'] = False
         
     d['form'] = HasDiscoGroups()
-  
     
     if request.method == 'POST':
         print(request.POST)
@@ -116,15 +115,12 @@ def user_details(request, id, template='user/details.html'):
     
     # check connection to discourse
     client = Utils.getDiscourseClient()
-    try: dUser = client.user(item.username)
+    try: 
+        p = user.participant
+        dUserDetails = client.user_all(user_id=p.discourse_user)
     except: 
         d['dUser_exists'] = False
     else:
-    #repair loss off Participant if everything else is correct     
-        try: p = item.participant
-        except:
-            p = Participant(user = item, discourse_user=dUser['id'])
-            p.save();
         d['dUser_exists'] = True
         
     return render(request, template, d)
@@ -215,7 +211,7 @@ def create_user(request, template='user/create.html'):
 def create_discourse_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     try: p = user.participant
-    except: logger.info("User "+user.username+" wird wird in discourse neu angelegt.  Er scheint vorher nicht dort existiert zu haben kein Participatn gefunden.")
+    except: logger.info("User "+user.username+" wird in discourse neu angelegt.  Er scheint vorher nicht dort existiert zu haben kein Participatn gefunden.")
     else: 
         client = Utils.getDiscourseClient()
         try: userDetails = client.user_all(user_id=p.user_id)
@@ -223,7 +219,8 @@ def create_discourse_user(request, user_id):
             logger.info("User "+user.username+" wird wird in discourse neu angelegt.  Participant existierte zwar, er scheint aber trotzdem nicht in discourse zu existieren.")
             user.participant.delete()
         else:
-            messages.error(request, 'Der Benutzer scheint doch zu existieren. Die Verbindung zu Discourse besteht bereits, der Benutzer existiert auch dort. Es scheint eine andere Fehler vorzuliegen. Wende dich bitte an einen Admin und poste diesen Text.')
+            messages.error(request, 'Der Benutzer scheint doch zu existieren. Die Verbindung zu Discourse besteht bereits, der Benutzer existiert auch dort. Es scheint eine anderer Fehler vorzuliegen. Wende dich bitte an einen Admin und poste diesen Text.')
+            return redirect('user-details', id=user_id)
     Utils.create_discourse_user(user)
     basicgroup = Utils.get_or_create_basic_group()
     basicgroup.user_set.add(user)
@@ -243,7 +240,9 @@ def activate_user(request, user_id):
     # TODO: lieber discourse_user (das ist ne id) nehmen? dann aber daten overhead ?
     try:
         client = Utils.getDiscourseClient()
-        dUser = client.user(username=user.username)
+        p = user.participant
+        dUser = client.user_all(user_id=p.discourse_user)
+
         print(dUser['id'])
     except: 
         messages.error(request, "Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein, ist jetzt nur im backend aktiviert")
@@ -268,7 +267,8 @@ def deactivate_user(request, user_id, info=None):
 
     try:
         client = Utils.getDiscourseClient()
-        dUser = client.user(username=user.username)
+        p = user.participant
+        dUser = client.user_all(user_id=p.discourse_user)
     except: 
         messages.error(request, "Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein, ist jetzt nur im backend deaktiviert")
         print ("Der Benutzer "+user.username+" scheint nicht sinvoll mit discourse verknüpft zu sein")

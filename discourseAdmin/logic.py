@@ -63,10 +63,25 @@ class Utils:
         return user
               
 
+    # create oder repair user
     @staticmethod
     def create_discourse_user(user, active=False): #python user sollte dann auch gerade erst erzeugt worden sein
         print("Utils.create_discourse_user")
         client = Utils.getDiscourseClient()
+ 
+        # check if discourse user already exists - mach das sinn ?
+        try: dUser = client.user(username=user.username)
+        except: logger.info("")
+        else: 
+            print( dUser['id'])
+            try: 
+                p = user.participant
+                discourse_user=dUser['id']
+            except: p = Participant(user = user, discourse_user=dUser['id'])
+            p.save();
+            logger.info("Benutzer*in "+user.username+" scheint bereits in Discourse zu existieren")
+            return
+
         if active != True : user.is_active = False
         #email für python nutzer anlegen
         if hasattr(settings, 'DISCOURSE_INTERN_SSO_EMAIL') :
