@@ -54,7 +54,7 @@ urlpatterns = [
 # 
 #     ] + urlpatterns
     
-print(urlpatterns);    
+#print(urlpatterns);    
     
     
     

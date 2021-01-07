@@ -39,16 +39,12 @@ urlpatterns = (
     path('import_users', migrations.import_users, name='import_users'),
     path('import_dgroup/<str:groupname>/<int:da_group_id>', migrations.import_dgroup, name='import_dgroup'),
     
-
     path('testisvaliduser', views.testisvaliduser, name='testisvaliduser'),
     path('login', views.login, name='login'),
     path('logout', views.logout, name='logout'),
     path('deactivate_inactives', views.deactivate_inactives, name='deactivate_inactives'),
     path('set_basic_group', views.set_basic_group, name='set_basic_group'),
     
-
-    
-
     #path('discourse_sso/', views.discourse_sso, name='discourse_sso'),
     path('anmeldung/index.html', views.discourse_sso, name='anmeldung1'),
     path('anmeldung/', views.discourse_sso, name='anmeldung'),

@@ -31,8 +31,8 @@
         {% if dUser_exists %} 
         Verbindung zu discourse scheint okay zu sein.<br> 
         {%else%}
-        <b style="color:red"> Warnung: Benutzer existiert in Discourse scheinbar nicht!</b><br>
-        <a href="{% url 'create_discourse_user' other_user.id  %}">Benutzer neu in discourse erstellen</a>
+        <b style="color:red"> Warnung: Verbindung zum Benutzer in Disourse existiert scheinbar nicht! (Bitte prüfe ob Discourse läuft)</b><br>
+        <a href="{% url 'create_discourse_user' other_user.id  %}">Benutzer neu in discourse erstellen oder Verbindung reparieren</a>
         
         {%endif%}
         </div>
@@ -46,7 +46,7 @@
         {% for group in user_groups %}
             {% if other_user.participant.department != group %}
                 <a href="{% url 'delete_user_from_group' other_user.id group.id  %}">{{group}}</a>
-                {% if group.is_department and other_user.participant.department is None %} 
+                {% if group.is_department %} <!-- #and other_user.participant.department is None -->  
                     <a href="{% url 'set_department' other_user.id group.id  %}"><img title="Als Hauptgruppe festlegen" alt="[Set Hauptgruppe]" src='{% static "images/icons/abteilung.svg" %}' ></a>
                 {% endif %},
             {% endif %}
