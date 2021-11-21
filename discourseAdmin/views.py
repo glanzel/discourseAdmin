@@ -21,11 +21,14 @@ from django.middleware.csrf import get_token
 from discourseAdmin.models import Participant, User, dGroup, User_Groups
 from discourseAdmin.forms import UserForm, LoginForm, ChangePasswordForm, GroupForm
 from discourseAdmin.logic import Utils
+from discourseAdmin.controllers.user import deactivate_user
+
 
 from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
 from datetime import date
 from _ast import If
 from django.utils import safestring
+
 
 #from doctest import DebugRunner #wird das benutzt ?
 #from pip._vendor.colorama.ansi import Fore # was macht das ?

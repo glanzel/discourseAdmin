@@ -24,6 +24,7 @@ from discourseAdmin.models import Participant, User, dGroup
 from discourseAdmin.forms import UserForm, LoginForm, ChangePasswordForm, GroupForm
 from discourseAdmin.logic import Utils
 
+
 from django3scaffold.http import JsonResponse # TODO: wieder ausbauen zugunsten der std JsonResponse ?
 from datetime import date
 

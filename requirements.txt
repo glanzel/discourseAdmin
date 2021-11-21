@@ -1,8 +1,9 @@
-Django
+Django==3.1
 pydiscourse
 requests
 django3scaffold
 setuptools
-mysqlclient
 django-cors-headers
 django-easy-audit
+PyMySQL==1.0.2
+
